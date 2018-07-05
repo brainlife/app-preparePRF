@@ -18,7 +18,7 @@
             
             let scene1 = new THREE.Scene();
             let scene2 = new THREE.Scene();
-            let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 1000);
+            let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 10000);
             let renderer = new THREE.WebGLRenderer();
             let controls = new THREE.OrbitControls(camera, renderer.domElement);
             let loader = new THREE.VTKLoader();
@@ -29,11 +29,31 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("main").appendChild(renderer.domElement);
             
+            let vertshader = `
+            attribute vec4 color;
+            varying vec4 vcolor;
+            
+            void main() {
+                vcolor = color;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+            `;
+            let fragshader = `
+            varying vec4 vcolor;
+            
+            void main() {
+                gl_FragColor = vcolor;
+            }
+            `;
+            
             let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
             let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
             
             let lh_inflated_geometry = await loadVTK('input/output/surf/lh.inflated.vtk');
             let rh_inflated_geometry = await loadVTK('input/output/surf/rh.inflated.vtk');
+            
+            let lh_v1_labels = await loadLabels('input/output/label/lh.V1.label');
+            let rh_v1_labels = await loadLabels('input/output/label/rh.V1.label');
             
             let pointlight1 = new THREE.PointLight(0xffffff, 1);
             let pointlight2 = new THREE.PointLight(0xffffff, 1);
@@ -55,12 +75,24 @@
             console.log(lh_pial_geometry);
             console.log(lh_inflated_geometry);
             
-            scene1.add(new THREE.AxesHelper(100));
-            scene1.add(new THREE.Mesh(lh_pial_geometry, pial_material));
-            scene1.add(new THREE.Mesh(rh_pial_geometry, pial_material));
+            let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l', lh_v1_labels));
+            let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r', rh_v1_labels));
             
-            scene2.add(new THREE.Mesh(lh_inflated_geometry, inflated_material));
-            scene2.add(new THREE.Mesh(rh_inflated_geometry, inflated_material));
+            let lh_inflated_mesh = new THREE.Mesh(lh_inflated_geometry, createMaterial(lh_inflated_geometry, 'l', lh_v1_labels));
+            let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r', rh_v1_labels));
+            
+            lh_pial_mesh.position.x = -100;
+            rh_pial_mesh.position.x = -100;
+            
+            lh_inflated_mesh.position.x = 100;
+            rh_inflated_mesh.position.x = 100;
+            
+            scene1.add(new THREE.AxesHelper(100));
+            scene1.add(lh_pial_mesh);
+            scene1.add(rh_pial_mesh);
+            
+            scene1.add(lh_inflated_mesh);
+            scene1.add(rh_inflated_mesh);
             
             scene1.add(pointlight1);
             scene2.add(pointlight2);
@@ -88,6 +120,60 @@
             function loadVTK(filename) {
                 return new Promise((resolve, reject) => {
                     loader.load(filename, resolve);
+                });
+            }
+            
+            function createMaterial(geometry, type, labels) {
+                let cols = [];
+                for (let i = 0; i < geometry.attributes.position.count; i++) {
+                    if (labels) {
+                        if (labels[i]) {
+                            cols.push(1);
+                            cols.push(0);
+                            cols.push(0);
+                            cols.push(1);
+                        } else {
+                            cols.push(.5);
+                            cols.push(.5);
+                            cols.push(.5);
+                            cols.push(1);
+                        }
+                    } else {
+                        let val = Math.floor(i / geometry.attributes.position.count * 0xffffff);
+                        let b = val & 8;
+                        let g = (val >> 8) & 8;
+                        let r = (val >> 16) & 8;
+                        
+                        cols.push(r);
+                        cols.push(g);
+                        cols.push(b);
+                        cols.push(.5);
+                    }
+                }
+                
+                geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 4));
+                return new THREE.ShaderMaterial({
+                    transparent: true,
+                    vertexShader: vertshader,
+                    fragmentShader: fragshader
+                })
+            }
+            
+            function loadLabels(filename) {
+                return new Promise(async (resolve, reject) => {
+                    let file = await fetch(filename);
+                    let contents = (await file.text()).replace(/[ ]+/g, " ");
+                    let lines = contents.split("\n");
+                    let result = {};
+                    
+                    for (let line of lines) {
+                        let values = line.split(" ");
+                        if (values.length == 5) {
+                            result[+values[0]] = values.slice(1);
+                        }
+                    }
+                    
+                    resolve(result);
                 });
             }
             
