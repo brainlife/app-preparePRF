@@ -179,11 +179,14 @@
                     
                     for (let line of lines) {
                         let values = line.split(" ");
+                        let name_without_path = filename.split("/");
+                        name_without_path = name_without_path[name_without_path.length - 1];
+                        
                         if (values.length == 5) {
                             labels[+values[0]] = {
-                                left: filename.startsWith("lh"),
-                                right: filename.startsWith("rh"),
-                                basename: filename.substring(filename.indexOf(".") + 1),
+                                left: name_without_path.startsWith("lh"),
+                                right: name_without_path.startsWith("rh"),
+                                basename: name_without_path.substring(name_without_path.indexOf(".") + 1),
                                 values: values.slice(1)
                             }
                         }
