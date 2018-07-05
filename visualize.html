@@ -5,6 +5,7 @@
         
         <script src="node_modules/vue/dist/vue.min.js"></script>
         <script src="node_modules/three/build/three.min.js"></script>
+        <script src="node_modules/async/dist/async.min.js"></script>
         <script src="node_modules/three/examples/js/controls/OrbitControls.js"></script>
         <script src="node_modules/three/examples/js/loaders/VTKLoader.js"></script>
     </head>
@@ -46,76 +47,81 @@
             }
             `;
             
-            let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
-            let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
+            let labelFiles = ["rh.BA44.label", "lh.BA44.label", "rh.BA45.label", "lh.entorhinal_exvivo.label", "lh.BA45.label", "rh.V2.label", "rh.BA3b.label", "rh.BA1.label", "rh.BA2.label", "lh.BA3b.label", "rh.perirhinal.label", "rh.V1.label", "lh.BA6.label", "lh.BA3a.label", "rh.MT.label", "rh.BA4p.label", "rh.BA3a.label", "lh.BA4p.label", "rh.entorhinal_exvivo.label", "lh.perirhinal.label", "lh.V1.label", "lh.BA1.label", "rh.cortex.prehires.label", "rh.cortex.deformed.label", "lh.cortex.prehires.label", "lh.MT.label", "lh.BA2.label", "rh.BA6.label", "lh.V2.label", "rh.BA4a.label", "lh.cortex.deformed.label", "lh.BA4a.label", "lh.cortex.label", "rh.cortex.label"];
+            let labels = {};
             
-            let lh_inflated_geometry = await loadVTK('input/output/surf/lh.inflated.vtk');
-            let rh_inflated_geometry = await loadVTK('input/output/surf/rh.inflated.vtk');
-            
-            let lh_v1_labels = await loadLabels('input/output/label/lh.V1.label');
-            let rh_v1_labels = await loadLabels('input/output/label/rh.V1.label');
-            
-            let pointlight1 = new THREE.PointLight(0xffffff, 1);
-            let pointlight2 = new THREE.PointLight(0xffffff, 1);
-            
-            let pial_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2194ce), transparent: true, opacity: .7 });
-            let inflated_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x9421ce), transparent: true, opacity: .7 });
-            
-            renderer.autoClear = false;
-            
-            lh_pial_geometry.computeVertexNormals();
-            rh_pial_geometry.computeVertexNormals();
-            
-            lh_inflated_geometry.computeVertexNormals();
-            rh_inflated_geometry.computeVertexNormals();
-            
-            pointlight1.position.copy(camera.position);
-            pointlight2.position.copy(camera.position);
-            
-            console.log(lh_pial_geometry);
-            console.log(lh_inflated_geometry);
-            
-            let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l', lh_v1_labels));
-            let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r', rh_v1_labels));
-            
-            let lh_inflated_mesh = new THREE.Mesh(lh_inflated_geometry, createMaterial(lh_inflated_geometry, 'l', lh_v1_labels));
-            let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r', rh_v1_labels));
-            
-            lh_pial_mesh.position.x = -100;
-            rh_pial_mesh.position.x = -100;
-            
-            lh_inflated_mesh.position.x = 100;
-            rh_inflated_mesh.position.x = 100;
-            
-            scene1.add(new THREE.AxesHelper(100));
-            scene1.add(lh_pial_mesh);
-            scene1.add(rh_pial_mesh);
-            
-            scene1.add(lh_inflated_mesh);
-            scene1.add(rh_inflated_mesh);
-            
-            scene1.add(pointlight1);
-            scene2.add(pointlight2);
-            
-            window.addEventListener("resize", function() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-            
-            function animate() {
-                requestAnimationFrame(animate);
+            async.eachLimit(labelFiles, 10, async (filename, next_file) => {
+                await loadLabels("input/output/label/" + filename);
+                next_file();
+            }, async function() {
+                let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
+                let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
+                
+                let lh_inflated_geometry = await loadVTK('input/output/surf/lh.inflated.vtk');
+                let rh_inflated_geometry = await loadVTK('input/output/surf/rh.inflated.vtk');
+                
+                let pointlight1 = new THREE.PointLight(0xffffff, 1);
+                let pointlight2 = new THREE.PointLight(0xffffff, 1);
+                
+                let pial_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2194ce), transparent: true, opacity: .7 });
+                let inflated_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x9421ce), transparent: true, opacity: .7 });
+                
+                renderer.autoClear = false;
+                
+                lh_pial_geometry.computeVertexNormals();
+                rh_pial_geometry.computeVertexNormals();
+                
+                lh_inflated_geometry.computeVertexNormals();
+                rh_inflated_geometry.computeVertexNormals();
+                
                 pointlight1.position.copy(camera.position);
                 pointlight2.position.copy(camera.position);
-                controls.update();
                 
-                renderer.clear();
-                renderer.render(scene2, camera);
-                renderer.clearDepth();
-                renderer.render(scene1, camera);
-            }
-            
-            animate();
+                console.log(lh_pial_geometry);
+                console.log(lh_inflated_geometry);
+                
+                let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l'));
+                let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r'));
+                
+                let lh_inflated_mesh = new THREE.Mesh(lh_inflated_geometry, createMaterial(lh_inflated_geometry, 'l'));
+                let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r'));
+                
+                lh_pial_mesh.position.x = -100;
+                rh_pial_mesh.position.x = -100;
+                
+                lh_inflated_mesh.position.x = 100;
+                rh_inflated_mesh.position.x = 100;
+                
+                scene1.add(new THREE.AxesHelper(100));
+                scene1.add(lh_pial_mesh);
+                scene1.add(rh_pial_mesh);
+                
+                scene1.add(lh_inflated_mesh);
+                scene1.add(rh_inflated_mesh);
+                
+                scene1.add(pointlight1);
+                scene2.add(pointlight2);
+                
+                window.addEventListener("resize", function() {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    pointlight1.position.copy(camera.position);
+                    pointlight2.position.copy(camera.position);
+                    controls.update();
+                    
+                    renderer.clear();
+                    renderer.render(scene2, camera);
+                    renderer.clearDepth();
+                    renderer.render(scene1, camera);
+                }
+                
+                animate();
+            });
             
             function loadVTK(filename) {
                 return new Promise((resolve, reject) => {
@@ -123,14 +129,20 @@
                 });
             }
             
-            function createMaterial(geometry, type, labels) {
+            function createMaterial(geometry, type) {
                 let cols = [];
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
                     if (labels) {
                         if (labels[i]) {
-                            cols.push(1);
-                            cols.push(0);
-                            cols.push(0);
+                            let color = hashstring(labels[i].basename) % 0xffffff;
+                            let intensity = +labels[i].values[3];
+                            let b = color & 8;
+                            let g = (color >> 8) & 8;
+                            let r = (color >> 16) & 8;
+                            
+                            cols.push(r * intensity);
+                            cols.push(g * intensity);
+                            cols.push(b * intensity);
                             cols.push(1);
                         } else {
                             cols.push(.5);
@@ -164,17 +176,29 @@
                     let file = await fetch(filename);
                     let contents = (await file.text()).replace(/[ ]+/g, " ");
                     let lines = contents.split("\n");
-                    let result = {};
                     
                     for (let line of lines) {
                         let values = line.split(" ");
                         if (values.length == 5) {
-                            result[+values[0]] = values.slice(1);
+                            labels[+values[0]] = {
+                                left: filename.startsWith("lh"),
+                                right: filename.startsWith("rh"),
+                                basename: filename.substring(filename.indexOf(".") + 1),
+                                values: values.slice(1)
+                            }
                         }
                     }
                     
-                    resolve(result);
+                    resolve(labels);
                 });
+            }
+            
+            function hashstring(s) {
+                var h = 0, l = s.length, i = 0;
+                if ( l > 0 )
+                    while (i < l)
+                        h = (h << 5) - h + s.charCodeAt(i++) | 0;
+                return h;
             }
             
             })();
