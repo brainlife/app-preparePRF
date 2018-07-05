@@ -48,7 +48,8 @@
             `;
             
             let labelFiles = ["lh.V1.label", "rh.V1.label"];
-            let labels = {};
+            let left_labels = {};
+            let right_labels = {};
             
             async.eachLimit(labelFiles, 10, async (filename, next_file) => {
                 await loadLabels("input/output/label/" + filename);
@@ -132,34 +133,27 @@
             function createMaterial(geometry, type) {
                 let cols = [];
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
-                    if (labels) {
-                        if (labels[i] && (type == 'l' && labels[i].left || type == 'r' && labels[i].right)) {
-                            let color = hashstring(labels[i].basename) % 0xffffff;
-                            let intensity = +labels[i].values[3];
-                            let b = color & 8;
-                            let g = (color >> 8) & 8;
-                            let r = (color >> 16) & 8;
-                            
-                            cols.push(r * intensity);
-                            cols.push(g * intensity);
-                            cols.push(b * intensity);
-                            cols.push(1);
-                        } else {
-                            cols.push(.5);
-                            cols.push(.5);
-                            cols.push(.5);
-                            cols.push(1);
-                        }
-                    } else {
-                        let val = Math.floor(i / geometry.attributes.position.count * 0xffffff);
-                        let b = val & 8;
-                        let g = (val >> 8) & 8;
-                        let r = (val >> 16) & 8;
+                    let label = null;
+                    if (type == 'l' && left_labels[i]) label = left_labels[i];
+                    else if (type == 'r' && right_labels[i]) label = right_labels[i];
+                    
+                    if (label) {
+                        let color = hashstring(label.basename) % 0xffffff;
+                        let intensity = +label.values[3];
                         
-                        cols.push(r);
-                        cols.push(g);
-                        cols.push(b);
+                        let b = color & 8;
+                        let g = (color >> 8) & 8;
+                        let r = (color >> 16) & 8;
+                        
+                        cols.push(r * intensity);
+                        cols.push(g * intensity);
+                        cols.push(b * intensity);
+                        cols.push(1);
+                    } else {
                         cols.push(.5);
+                        cols.push(.5);
+                        cols.push(.5);
+                        cols.push(1);
                     }
                 }
                 
@@ -182,17 +176,24 @@
                         let name_without_path = filename.split("/");
                         name_without_path = name_without_path[name_without_path.length - 1];
                         
+                        let basename = name_without_path.substring(name_without_path.indexOf(".") + 1);
+                        
                         if (values.length == 5) {
-                            labels[+values[0]] = {
-                                left: name_without_path.startsWith("lh"),
-                                right: name_without_path.startsWith("rh"),
-                                basename: name_without_path.substring(name_without_path.indexOf(".") + 1),
-                                values: values.slice(1)
+                            if (name_without_path.startsWith("lh")) {
+                                left_labels[+values[0]] = {
+                                    basename,
+                                    values: values.slice(1)
+                                }
+                            } else if (name_without_path.startsWith("rh")) {
+                                right_labels[+values[0]] = {
+                                    basename,
+                                    values: values.slice(1)
+                                }
                             }
                         }
                     }
                     
-                    resolve(labels);
+                    resolve(null);
                 });
             }
             
