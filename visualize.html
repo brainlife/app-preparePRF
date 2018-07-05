@@ -47,14 +47,17 @@
             }
             `;
             
-            let labelFiles = ["lh.V1.label", "rh.V1.label"];
+            let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label", "lh.BA1.label", "rh.BA1.label", "lh.BA2.label", "rh.BA2.label", "lh.BA3b.label", "rh.BA3b.label", "lh.BA4a.label", "rh.BA4a.label", "lh.entorhinal_exvivo.label", "rh.entorhinal_exvivo.label", "lh.MT.label", "rh.MT.label", "lh.BA1.label", "rh.BA1.label"];
             let left_labels = {};
             let right_labels = {};
             
-            async.eachLimit(labelFiles, 10, async (filename, next_file) => {
-                await loadLabels("input/output/label/" + filename);
-                next_file();
-            }, async function() {
+            async.eachLimit(labelFiles, 10, function(filename, next_file) {
+                loadLabels("input/output/label/" + filename)
+                .then(_ => {
+                    next_file();
+                });
+            }, async function(err) {
+                if (err) console.error(err);
                 let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
                 let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
                 
@@ -88,10 +91,10 @@
                 let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r'));
                 
                 lh_pial_mesh.position.x = -100;
-                rh_pial_mesh.position.x = -100;
+                rh_pial_mesh.position.x = -70;
                 
-                lh_inflated_mesh.position.x = 100;
-                rh_inflated_mesh.position.x = 100;
+                lh_inflated_mesh.position.x = 70;
+                rh_inflated_mesh.position.x = 190;
                 
                 scene1.add(new THREE.AxesHelper(100));
                 scene1.add(lh_pial_mesh);
@@ -140,14 +143,15 @@
                     if (label) {
                         let color = hashstring(label.basename) % 0xffffff;
                         let intensity = +label.values[3];
+                        if (intensity < .3) intensity = .3;
                         
                         let b = color & 8;
                         let g = (color >> 8) & 8;
                         let r = (color >> 16) & 8;
                         
-                        cols.push(r * intensity);
-                        cols.push(g * intensity);
-                        cols.push(b * intensity);
+                        cols.push(r/* * intensity*/);
+                        cols.push(g/* * intensity*/);
+                        cols.push(b/* * intensity*/);
                         cols.push(1);
                     } else {
                         cols.push(.5);
