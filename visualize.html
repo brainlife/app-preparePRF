@@ -47,7 +47,7 @@
             }
             `;
             
-            let labelFiles = ["rh.BA44.label", "lh.BA44.label", "rh.BA45.label", "lh.entorhinal_exvivo.label", "lh.BA45.label", "rh.V2.label", "rh.BA3b.label", "rh.BA1.label", "rh.BA2.label", "lh.BA3b.label", "rh.perirhinal.label", "rh.V1.label", "lh.BA6.label", "lh.BA3a.label", "rh.MT.label", "rh.BA4p.label", "rh.BA3a.label", "lh.BA4p.label", "rh.entorhinal_exvivo.label", "lh.perirhinal.label", "lh.V1.label", "lh.BA1.label", "rh.cortex.prehires.label", "rh.cortex.deformed.label", "lh.cortex.prehires.label", "lh.MT.label", "lh.BA2.label", "rh.BA6.label", "lh.V2.label", "rh.BA4a.label", "lh.cortex.deformed.label", "lh.BA4a.label", "lh.cortex.label", "rh.cortex.label"];
+            let labelFiles = ["lh.V1.label", "rh.V1.label"];
             let labels = {};
             
             async.eachLimit(labelFiles, 10, async (filename, next_file) => {
@@ -133,7 +133,7 @@
                 let cols = [];
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
                     if (labels) {
-                        if (labels[i]) {
+                        if (labels[i] && (type == 'l' && labels[i].left || type == 'r' && labels[i].right)) {
                             let color = hashstring(labels[i].basename) % 0xffffff;
                             let intensity = +labels[i].values[3];
                             let b = color & 8;
