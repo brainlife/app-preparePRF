@@ -3,6 +3,7 @@
     <head>
         <title>Surface</title>
         
+        <script src="dist.bundled.js"></script>
         <script src="node_modules/vue/dist/vue.min.js"></script>
         <script src="node_modules/three/build/three.min.js"></script>
         <script src="node_modules/async/dist/async.min.js"></script>
@@ -34,11 +35,23 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("main").appendChild(renderer.domElement);
             
-            let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label"];
+            let labelFiles = ["lh.V1.label", "rh.V1.label"];
             // let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label", "lh.BA1.label", "rh.BA1.label", "lh.BA2.label", "rh.BA2.label", "lh.BA3a.label", "rh.BA3a.label", "lh.BA3b.label", "rh.BA3b.label", "lh.BA4a.label", "rh.BA4a.label", "lh.BA4p.label", "rh.BA4p.label", "lh.BA4p.thresh.label", "rh.BA4p.thresh.label", "lh.BA6.label", "rh.BA6.label", "lh.BA44.label", "rh.BA44.label", "lh.BA45.label", "rh.BA45.label", "lh.BA6.label", "rh.BA6.label", "lh.entorhinal_exvivo.label", "rh.entorhinal_exvivo.label", "lh.MT.label", "rh.MT.label", "lh.perirhinal.label", "rh.perirhinal.label"];
             // let labelFiles = ["rh.BA44.label", "lh.BA44.label", "lh.BA3b.thresh.label", "rh.BA6.thresh.label", "rh.BA45.label", "rh.BA2.thresh.label", "lh.entorhinal_exvivo.label", "lh.BA45.label", "lh.BA3a.thresh.label", "rh.V2.label", "rh.BA45.thresh.label", "rh.BA3b.label", "rh.BA1.thresh.label", "rh.BA1.label", "rh.BA44.thresh.label", "rh.BA2.label", "lh.BA3b.label", "rh.perirhinal.label", "rh.V1.label", "lh.BA6.label", "lh.BA3a.label", "rh.MT.label", "rh.BA4p.thresh.label", "rh.BA4p.label", "rh.BA3a.label", "lh.BA4p.label", "rh.BA4a.thresh.label", "lh.BA4a.thresh.label", "rh.entorhinal_exvivo.label", "lh.perirhinal.label", "rh.aparc.a2009s.annot", "lh.V1.label", "lh.BA1.label", "rh.cortex.prehires.label", "rh.cortex.deformed.label", "lh.cortex.prehires.label", "lh.aparc.annot", "lh.BA4p.thresh.label", "lh.MT.label", "lh.BA45.thresh.label", "lh.BA2.label", "rh.MT.thresh.label", "rh.BA6.label", "lh.V2.label", "lh.MT.thresh.label", "lh.BA6.thresh.label", "lh.BA44.thresh.label", "rh.V1.thresh.label", "rh.BA4a.label", "lh.cortex.deformed.label", "lh.V2.thresh.label", "lh.BA4a.label", "lh.BA2.thresh.label", "rh.V2.thresh.label", "rh.BA3b.thresh.label", "rh.BA3a.thresh.label", "lh.V1.thresh.label", "lh.BA1.thresh.label", "lh.cortex.label", "rh.cortex.label"]
             let left_labels = {};
             let right_labels = {};
+            
+            console.log('loading r2...');
+            let r2_req = await fetch('input/prf/r2.fixed.nii');
+            let r2_buff = await r2_req.arrayBuffer();
+            let r2_nifti = niftijs.parse(r2_buff);
+            let r2_nifti_header = niftijs.parseHeader(r2_buff);
+            
+            let stride = [1, r2_nifti.sizes[0], r2_nifti.sizes[0] * r2_nifti.sizes[1]];
+            let r2 = ndarray(r2_nifti.data, r2_nifti.sizes, stride);
+            console.log(r2_nifti_header);
+            
+            showR2();
             
             async.eachLimit(labelFiles, 10, function(filename, next_file) {
                 console.log("loading", filename);
@@ -48,11 +61,18 @@
                 });
             }, async function(err) {
                 if (err) console.error(err);
+                
                 console.log("loading lh.pial");
                 let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
                 
                 console.log("loading rh.pial");
                 let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
+                
+                console.log("loading lh.white");
+                let lh_white_geometry = await loadVTK('input/output/surf/lh.white.vtk');
+                
+                console.log("loading rh.white");
+                let rh_white_geometry = await loadVTK('input/output/surf/rh.white.vtk');
                 
                 console.log("loading lh.inflated");
                 let lh_inflated_geometry = await loadVTK('input/output/surf/lh.inflated.vtk');
@@ -79,25 +99,19 @@
                 addLightSphere(pointlight1);
                 
                 scene1.add(pointlight1);
-                // scene2.add(pointlight2);
+                scene2.add(pointlight2);
                 
                 console.log(lh_pial_geometry);
                 console.log(lh_inflated_geometry);
                 
-                let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l', lh_inflated_geometry));
-                let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r', rh_inflated_geometry));
+                let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l', lh_inflated_geometry, lh_white_geometry));
+                let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r', rh_inflated_geometry, rh_white_geometry));
                 
                 console.log(lh_pial_mesh);
-                
-                let lh_inflated_mesh = new THREE.Mesh(lh_inflated_geometry, createMaterial(lh_inflated_geometry, 'l'));
-                let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r'));
                 
                 scene1.add(new THREE.AxesHelper(100));
                 scene1.add(lh_pial_mesh);
                 scene1.add(rh_pial_mesh);
-                
-                // scene1.add(lh_inflated_mesh);
-                // scene1.add(rh_inflated_mesh);
                 
                 window.addEventListener("resize", function() {
                     camera.aspect = window.innerWidth / window.innerHeight;
@@ -120,14 +134,14 @@
                     
                     // pointlight1.position.set(Math.cos(tick / 100) * 200, 0, Math.sin(tick / 100) * 200);
                     pointlight1.position.copy(camera.position);
-                    // pointlight2.position.copy(camera.position);
+                    pointlight2.position.copy(camera.position);
                     
                     controls.update();
                     
                     renderer.clear();
-                    // renderer.render(scene2, camera);
-                    renderer.clearDepth();
                     renderer.render(scene1, camera);
+                    renderer.clearDepth();
+                    // renderer.render(scene2, camera);
                 }
                 
                 animate();
@@ -152,7 +166,7 @@
                 return result;
             }
             
-            function createMaterial(geometry, type, inflated) {
+            function createMaterial(geometry, type, inflated, white) {
                 let vertshader = `
                 attribute vec4 color;
                 attribute vec3 morphTarget;
@@ -204,38 +218,62 @@
                 
                 let cols = [];
                 let morphTargets = [];
+                
                 for (let i = 0; i < geometry.attributes.position.count; i++) {
                     let label = null;
                     if (type == 'l' && left_labels[i]) label = left_labels[i];
                     else if (type == 'r' && right_labels[i]) label = right_labels[i];
                     
-                    if (inflated) {
-                        let shift = [-60, 0, 0];
-                        if (type == 'r') shift = [60, 0, 0];
-                        morphTargets.push(inflated.attributes.position.array[i * 3] + shift[0]);
-                        morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
-                        morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
-                    } else {
-                        morphTargets.push(geometry.attributes.position.array[i * 3]);
-                        morphTargets.push(geometry.attributes.position.array[i * 3 + 1]);
-                        morphTargets.push(geometry.attributes.position.array[i * 3 + 2]);
-                    }
+                    // setup morph targets
+                    let shift = [-60, 0, 0];
+                    if (type == 'r') shift = [60, 0, 0];
+                    morphTargets.push(inflated.attributes.position.array[i * 3] + shift[0]);
+                    morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
+                    morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
                     
-                    if (label) {
-                        let color = hashstring(label.basename) % 0xffffff;
-                        let intensity = +label.values[3];
-                        if (intensity < .3) intensity = .3;
+                    // let tx = (x / this.color_map.shape[0] * 256 - 128) / 1.5;
+                    // let ty = (y / this.color_map.shape[1] * 256 - 128) / 1.5;
+                    // let tz = (z / this.color_map.shape[2] * 256 - 128) / 1.5;
+                    // let value = this.color_map.get(y, this.color_map.shape[0] - x, z);
+                    
+                    // get r2 weight
+                    let x = (geometry.attributes.position.array[i * 3] + white.attributes.position.array[i * 3]) / 2;
+                    let y = (geometry.attributes.position.array[i * 3 + 1] + white.attributes.position.array[i * 3 + 1]) / 2;
+                    let z = (geometry.attributes.position.array[i * 3 + 2] + white.attributes.position.array[i * 3 + 2]) / 2;
+                    
+                    x = Math.round((x + 128) / 256 * r2.shape[0]);
+                    y = Math.round((y + 128) / 256 * r2.shape[1]);
+                    z = Math.round((z + 128) / 256 * r2.shape[2]);
+                    
+                    // let tx = Math.round((x + r2_nifti_header.spaceOrigin[0]) * r2_nifti_header.thicknesses[0]);
+                    // let ty = Math.round((z + r2_nifti_header.spaceOrigin[1]) * r2_nifti_header.thicknesses[1]);
+                    // let tz = Math.round((y + r2_nifti_header.spaceOrigin[2]) * r2_nifti_header.thicknesses[2]);
+                    
+                    let r2_weight = r2.get(y, x, z);
+                    
+                    if (typeof r2_weight == 'number') {
+                        let b = 1;
+                        let g = 1;
+                        let r = 1;
                         
-                        let b = color & 8;
-                        let g = (color >> 8) & 8;
-                        let r = (color >> 16) & 8;
+                        // if (label) {
+                        //     // let color = hashstring(label.basename) % 0xffffff;
+                        //     // let color = 0x2194ce;
+                        //     // let intensity = +label.values[3];
+                        //     // if (intensity < .3) intensity = .3;
+                            
+                        //     b = 1;
+                        //     g = .5;
+                        //     r = .5;
+                        // }
                         
-                        cols.push(r * intensity);
-                        cols.push(g * intensity);
-                        cols.push(b * intensity);
+                        cols.push(r * r2_weight);
+                        cols.push(g * r2_weight);
+                        cols.push(b * r2_weight);
                         cols.push(1);
-                    } else {
-                        cols.push(.5);
+                    }
+                    else {
+                        cols.push(1);
                         cols.push(.5);
                         cols.push(.5);
                         cols.push(1);
@@ -245,6 +283,8 @@
                 geometry.addAttribute('normalTarget', new THREE.BufferAttribute((inflated || geometry).attributes.normal.array.slice(), 3));
                 geometry.addAttribute('morphTarget', new THREE.BufferAttribute(new Float32Array(morphTargets), 3));
                 geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 4));
+                geometry._color = cols;
+                
                 return new THREE.ShaderMaterial({
                     // color: type == 'l' ? new THREE.Color(0x2194ce) : new THREE.Color(0xce2194),
                     vertexShader: vertshader,
@@ -258,6 +298,55 @@
                         }
                     ]),
                 })
+            }
+            
+            function showR2() {
+                if (r2) {
+                    let buckets = [];
+                    let num_buckets = 16;
+                    let threshold = 0;
+                    
+                    for (let i = 0; i < num_buckets; i++) {
+                        buckets.push(new THREE.Geometry());
+                    }
+                    
+                    for (let x = 0; x < r2.shape[0]; x++) {
+                        for (let y = 0; y <= r2.shape[1]; y++) {
+                            //for (let z = 0; z < r2.shape[0]; z++) {
+                            for (let z = 15; z <= 15; z++) {
+                                //let value = r2.get(z, y, x);
+                                let value = r2.get(y, r2.shape[0] - x, z);
+
+                                if(value > 10) value = 0; //consider to be noise for now..
+                                if(isNaN(value)) value = 0;
+                                let normalized_value = value / 1;
+                                
+                                if (value > threshold) {
+                                    let tx = (x / r2.shape[0] * 256 - 128) / 1.5;
+                                    let ty = (y / r2.shape[1] * 256 - 128) / 1.5;
+                                    let tz = (z / r2.shape[2] * 256 - 128) / 1.5;
+                                    let bucket = Math.round(normalized_value * num_buckets);
+                                    
+                                    if(bucket >= num_buckets) bucket = num_buckets-1; //overflow
+                                    
+                                    buckets[bucket].vertices.push(new THREE.Vector3(tx, ty, tz));
+                                }
+                                
+                            }
+                        }
+                    }
+                    
+                    //this.visual_weights = [];
+                    for (let bucket = 0; bucket < num_buckets; bucket++) {
+                        let material = new THREE.PointsMaterial({
+                            transparent: true,
+                            size: 6,
+                            opacity: bucket/num_buckets,
+                        });
+                        // this.visual_weights[bucket] = new THREE.Points(buckets[bucket], material);
+                        scene2.add(new THREE.Points(buckets[bucket], material));
+                    }
+                }
             }
             
             function loadLabels(filename) {

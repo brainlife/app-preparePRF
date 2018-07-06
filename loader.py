@@ -31,7 +31,7 @@ def load_vtk(filename):
     with open(filename) as f:
         contents = f.read()
     
-    result = dict()
+    result = []
     lines = contents.splitlines()
     mode = 'header'
     point_idx = 0
@@ -43,14 +43,11 @@ def load_vtk(filename):
         values = re.split('[ ]+', line)
         
         if mode == 'points':
-            result[point_idx] = (values[0], values[1], values[2])
+            result.append([float(x) for x in values])
             
             point_idx += 1
             if point_idx == num_points:
                 break
-        
-        if len(values) == 5:
-            result[values[0]] = values[1:]
         
         if values[0] == 'POINTS':
             mode = 'points'

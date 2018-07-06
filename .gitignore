@@ -2,3 +2,4 @@ config.json
 package.json
 input
 node_modules
+output.json
