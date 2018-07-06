@@ -61,8 +61,8 @@
                 let pointlight1 = new THREE.PointLight(0xffffff, 1);
                 let pointlight2 = new THREE.PointLight(0xffffff, 1);
                 
-                let pial_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2194ce), transparent: true, opacity: .7 });
-                let inflated_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x9421ce), transparent: true, opacity: .7 });
+                // let pial_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2194ce), transparent: true, opacity: .7 });
+                // let inflated_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x9421ce), transparent: true, opacity: .7 });
                 
                 renderer.autoClear = false;
                 
@@ -74,9 +74,10 @@
                 
                 pointlight1.position.copy(camera.position);
                 pointlight2.position.copy(camera.position);
+                addLightSphere(pointlight1);
                 
                 scene1.add(pointlight1);
-                scene2.add(pointlight2);
+                // scene2.add(pointlight2);
                 
                 console.log(lh_pial_geometry);
                 console.log(lh_inflated_geometry);
@@ -115,15 +116,20 @@
                     rh_pial_mesh.material.uniforms.inflation.value = value;
                 });
                 
+                let tick = 0;
                 function animate() {
                     requestAnimationFrame(animate);
+                    
+                    tick++;
+                    
+                    // pointlight1.position.set(Math.cos(tick / 100) * 200, 0, Math.sin(tick / 100) * 200);
                     pointlight1.position.copy(camera.position);
-                    pointlight2.position.copy(camera.position);
+                    // pointlight2.position.copy(camera.position);
                     
                     controls.update();
                     
                     renderer.clear();
-                    renderer.render(scene2, camera);
+                    // renderer.render(scene2, camera);
                     renderer.clearDepth();
                     renderer.render(scene1, camera);
                 }
@@ -163,16 +169,15 @@
                 varying vec3 vdestnorm;
                 
                 void main() {
-                    vcolor = color;
-                    vpos = position;
-                    vnorm = normal;
-                    vdestnorm = normalTarget;
-                    
                     vec3 morphDifference = morphTarget - position;
                     
+                    vcolor = color;
+                    vnorm = normalMatrix * normal;
+                    vdestnorm = normalMatrix * normalTarget;
+                    vpos = (modelViewMatrix * vec4(position + morphDifference * inflation, 1.0)).xyz;
+                    
                     gl_Position = projectionMatrix * modelViewMatrix * vec4(position + morphDifference * inflation, 1.0);
-                }
-                `;
+                }`;
                 let fragshader = `
                 precision highp float;
                 
@@ -191,16 +196,15 @@
                 uniform float lightIntensity;
                 
                 void main() {
-                    vec4 illumination = vec4(0, 0, 0, 1);
+                    vec4 illumination = vec4(0.1, 0.1, 0.1, 1.0);
                     vec3 norm = clamp(vnorm + (vdestnorm - vnorm) * inflation, 0.0, 1.0);
                     
-                    for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
-                        vec3 direction = normalize(vpos - pointLights[i].position);
-                        illumination.xyz += clamp(dot(direction, norm), 0.0, 1.0) * pointLights[i].color;
+                    for (int l = 0; l < NUM_POINT_LIGHTS; l++) {
+                        vec3 lightDirection = normalize(vpos - pointLights[l].position);
+                        illumination.xyz += clamp(dot(-lightDirection, norm), 0.0, 1.0) * pointLights[l].color;
                     }
                     gl_FragColor = vcolor * illumination;
-                }
-                `;
+                }`;
                 
                 let cols = [];
                 let morphTargets = [];
@@ -316,6 +320,11 @@
             //     geometry.attributes.morphNormal.array = norms;
             //     geometry.attributes.morphNormal.needsUpdate = true;
             // }
+            
+            function addLightSphere(light) {
+                light.sphere = new THREE.Mesh(new THREE.SphereGeometry(2, 16, 16), new THREE.MeshBasicMaterial({ color: light.color }));
+                light.add(light.sphere);
+            };
             
             function hashstring(s) {
                 var h = 0, l = s.length, i = 0;
