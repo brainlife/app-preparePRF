@@ -154,17 +154,19 @@
                 let vertshader = `
                 attribute vec4 color;
                 attribute vec3 morphTarget;
-                attribute vec3 morphNormal;
+                attribute vec3 normalTarget;
                 uniform float inflation;
                 
                 varying vec4 vcolor;
                 varying vec3 vpos;
                 varying vec3 vnorm;
+                varying vec3 vdestnorm;
                 
                 void main() {
                     vcolor = color;
                     vpos = position;
                     vnorm = normal;
+                    vdestnorm = normalTarget;
                     
                     vec3 morphDifference = morphTarget - position;
                     
@@ -178,6 +180,7 @@
                 varying vec4 vcolor;
                 varying vec3 vpos;
                 varying vec3 vnorm;
+                varying vec3 vdestnorm;
                 
                 struct PointLight {
                     vec3 color;
@@ -189,13 +192,13 @@
                 
                 void main() {
                     vec4 illumination = vec4(0, 0, 0, 1);
+                    vec3 norm = clamp(vnorm + (vdestnorm - vnorm) * inflation, 0.0, 1.0);
+                    
                     for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
                         vec3 direction = normalize(vpos - pointLights[i].position);
-                        illumination.xyz += clamp(dot(direction, vnorm), 0.0, 1.0) * pointLights[i].color;
+                        illumination.xyz += clamp(dot(direction, norm), 0.0, 1.0) * pointLights[i].color;
                     }
-                    illumination.xyz *= (1.0 - inflation);
-                    
-                    gl_FragColor = vcolor * (illumination + vec4(inflation, inflation, inflation, 1));
+                    gl_FragColor = vcolor * illumination;
                 }
                 `;
                 
@@ -239,7 +242,7 @@
                     }
                 }
                 
-                geometry.addAttribute('morphNormal', new THREE.BufferAttribute(geometry.attributes.normal.array.slice(), 3));
+                geometry.addAttribute('normalTarget', new THREE.BufferAttribute((inflated || geometry).attributes.normal.array.slice(), 3));
                 geometry.addAttribute('morphTarget', new THREE.BufferAttribute(new Float32Array(morphTargets), 3));
                 geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 4));
                 return new THREE.ShaderMaterial({
