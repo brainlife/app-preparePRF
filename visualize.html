@@ -21,18 +21,20 @@
             let scene1 = new THREE.Scene();
             let scene2 = new THREE.Scene();
             let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 10000);
+            
+            camera.position.y = 200;
+            camera.up = new THREE.Vector3(0, 0, 1);
+            
             let renderer = new THREE.WebGLRenderer();
             let controls = new THREE.OrbitControls(camera, renderer.domElement);
             let loader = new THREE.VTKLoader();
             let gui = new dat.GUI();
             
-            camera.position.z = 200;
-            
             renderer.setClearColor(new THREE.Color(0x222222));
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("main").appendChild(renderer.domElement);
             
-            let labelFiles = ["lh.V1.label", "rh.V1.label"];
+            let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label"];
             // let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label", "lh.BA1.label", "rh.BA1.label", "lh.BA2.label", "rh.BA2.label", "lh.BA3a.label", "rh.BA3a.label", "lh.BA3b.label", "rh.BA3b.label", "lh.BA4a.label", "rh.BA4a.label", "lh.BA4p.label", "rh.BA4p.label", "lh.BA4p.thresh.label", "rh.BA4p.thresh.label", "lh.BA6.label", "rh.BA6.label", "lh.BA44.label", "rh.BA44.label", "lh.BA45.label", "rh.BA45.label", "lh.BA6.label", "rh.BA6.label", "lh.entorhinal_exvivo.label", "rh.entorhinal_exvivo.label", "lh.MT.label", "rh.MT.label", "lh.perirhinal.label", "rh.perirhinal.label"];
             // let labelFiles = ["rh.BA44.label", "lh.BA44.label", "lh.BA3b.thresh.label", "rh.BA6.thresh.label", "rh.BA45.label", "rh.BA2.thresh.label", "lh.entorhinal_exvivo.label", "lh.BA45.label", "lh.BA3a.thresh.label", "rh.V2.label", "rh.BA45.thresh.label", "rh.BA3b.label", "rh.BA1.thresh.label", "rh.BA1.label", "rh.BA44.thresh.label", "rh.BA2.label", "lh.BA3b.label", "rh.perirhinal.label", "rh.V1.label", "lh.BA6.label", "lh.BA3a.label", "rh.MT.label", "rh.BA4p.thresh.label", "rh.BA4p.label", "rh.BA3a.label", "lh.BA4p.label", "rh.BA4a.thresh.label", "lh.BA4a.thresh.label", "rh.entorhinal_exvivo.label", "lh.perirhinal.label", "rh.aparc.a2009s.annot", "lh.V1.label", "lh.BA1.label", "rh.cortex.prehires.label", "rh.cortex.deformed.label", "lh.cortex.prehires.label", "lh.aparc.annot", "lh.BA4p.thresh.label", "lh.MT.label", "lh.BA45.thresh.label", "lh.BA2.label", "rh.MT.thresh.label", "rh.BA6.label", "lh.V2.label", "lh.MT.thresh.label", "lh.BA6.thresh.label", "lh.BA44.thresh.label", "rh.V1.thresh.label", "rh.BA4a.label", "lh.cortex.deformed.label", "lh.V2.thresh.label", "lh.BA4a.label", "lh.BA2.thresh.label", "rh.V2.thresh.label", "rh.BA3b.thresh.label", "rh.BA3a.thresh.label", "lh.V1.thresh.label", "lh.BA1.thresh.label", "lh.cortex.label", "rh.cortex.label"]
             let left_labels = {};
@@ -89,12 +91,6 @@
                 
                 let lh_inflated_mesh = new THREE.Mesh(lh_inflated_geometry, createMaterial(lh_inflated_geometry, 'l'));
                 let rh_inflated_mesh = new THREE.Mesh(rh_inflated_geometry, createMaterial(rh_inflated_geometry, 'r'));
-                
-                lh_pial_mesh.position.x = -100;
-                rh_pial_mesh.position.x = -70;
-                
-                lh_inflated_mesh.position.x = 70;
-                rh_inflated_mesh.position.x = 190;
                 
                 scene1.add(new THREE.AxesHelper(100));
                 scene1.add(lh_pial_mesh);
@@ -214,8 +210,8 @@
                     else if (type == 'r' && right_labels[i]) label = right_labels[i];
                     
                     if (inflated) {
-                        let shift = [170, 0, 0];
-                        if (type == 'r') shift = [260, 0, 0];
+                        let shift = [-60, 0, 0];
+                        if (type == 'r') shift = [60, 0, 0];
                         morphTargets.push(inflated.attributes.position.array[i * 3] + shift[0]);
                         morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
                         morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
@@ -226,7 +222,7 @@
                     }
                     
                     if (label) {
-                        let color = hashstring(label.basename + "!@#$%^&*()") % 0xffffff;
+                        let color = hashstring(label.basename) % 0xffffff;
                         let intensity = +label.values[3];
                         if (intensity < .3) intensity = .3;
                         
