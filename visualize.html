@@ -32,23 +32,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("main").appendChild(renderer.domElement);
             
-            let vertshader = `
-            attribute vec4 color;
-            varying vec4 vcolor;
-            
-            void main() {
-                vcolor = color;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-            }
-            `;
-            let fragshader = `
-            varying vec4 vcolor;
-            
-            void main() {
-                gl_FragColor = vcolor;
-            }
-            `;
-            
             let labelFiles = ["lh.V1.label", "rh.V1.label"];
             // let labelFiles = ["lh.V1.label", "rh.V1.label", "lh.V2.label", "rh.V2.label", "lh.BA1.label", "rh.BA1.label", "lh.BA2.label", "rh.BA2.label", "lh.BA3a.label", "rh.BA3a.label", "lh.BA3b.label", "rh.BA3b.label", "lh.BA4a.label", "rh.BA4a.label", "lh.BA4p.label", "rh.BA4p.label", "lh.BA4p.thresh.label", "rh.BA4p.thresh.label", "lh.BA6.label", "rh.BA6.label", "lh.BA44.label", "rh.BA44.label", "lh.BA45.label", "rh.BA45.label", "lh.BA6.label", "rh.BA6.label", "lh.entorhinal_exvivo.label", "rh.entorhinal_exvivo.label", "lh.MT.label", "rh.MT.label", "lh.perirhinal.label", "rh.perirhinal.label"];
             // let labelFiles = ["rh.BA44.label", "lh.BA44.label", "lh.BA3b.thresh.label", "rh.BA6.thresh.label", "rh.BA45.label", "rh.BA2.thresh.label", "lh.entorhinal_exvivo.label", "lh.BA45.label", "lh.BA3a.thresh.label", "rh.V2.label", "rh.BA45.thresh.label", "rh.BA3b.label", "rh.BA1.thresh.label", "rh.BA1.label", "rh.BA44.thresh.label", "rh.BA2.label", "lh.BA3b.label", "rh.perirhinal.label", "rh.V1.label", "lh.BA6.label", "lh.BA3a.label", "rh.MT.label", "rh.BA4p.thresh.label", "rh.BA4p.label", "rh.BA3a.label", "lh.BA4p.label", "rh.BA4a.thresh.label", "lh.BA4a.thresh.label", "rh.entorhinal_exvivo.label", "lh.perirhinal.label", "rh.aparc.a2009s.annot", "lh.V1.label", "lh.BA1.label", "rh.cortex.prehires.label", "rh.cortex.deformed.label", "lh.cortex.prehires.label", "lh.aparc.annot", "lh.BA4p.thresh.label", "lh.MT.label", "lh.BA45.thresh.label", "lh.BA2.label", "rh.MT.thresh.label", "rh.BA6.label", "lh.V2.label", "lh.MT.thresh.label", "lh.BA6.thresh.label", "lh.BA44.thresh.label", "rh.V1.thresh.label", "rh.BA4a.label", "lh.cortex.deformed.label", "lh.V2.thresh.label", "lh.BA4a.label", "lh.BA2.thresh.label", "rh.V2.thresh.label", "rh.BA3b.thresh.label", "rh.BA3a.thresh.label", "lh.V1.thresh.label", "lh.BA1.thresh.label", "lh.cortex.label", "rh.cortex.label"]
@@ -81,16 +64,6 @@
                 let pial_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x2194ce), transparent: true, opacity: .7 });
                 let inflated_material = new THREE.MeshLambertMaterial({ color: new THREE.Color(0x9421ce), transparent: true, opacity: .7 });
                 
-                let tmp = new THREE.Geometry();
-                tmp = tmp.fromBufferGeometry(lh_pial_geometry);
-                tmp.computeVertexNormals();
-                lh_pial_geometry = tmp;
-                
-                tmp = new THREE.Geometry();
-                tmp = tmp.fromBufferGeometry(rh_pial_geometry);
-                tmp.computeVertexNormals();
-                rh_pial_geometry = tmp;
-                
                 renderer.autoClear = false;
                 
                 lh_pial_geometry.computeVertexNormals();
@@ -102,18 +75,14 @@
                 pointlight1.position.copy(camera.position);
                 pointlight2.position.copy(camera.position);
                 
+                scene1.add(pointlight1);
+                scene2.add(pointlight2);
+                
                 console.log(lh_pial_geometry);
                 console.log(lh_inflated_geometry);
                 
-                let params = {
-                    inflation: 0,
-                }
-                
-                lh_pial_geometry.morphTargets.push({ name: "lh_inflated", vertices: getVertices(lh_inflated_geometry, new THREE.Vector3(170, 0, 0)).slice() });
-                rh_pial_geometry.morphTargets.push({ name: "rh_inflated", vertices: getVertices(rh_inflated_geometry, new THREE.Vector3(260, 0, 0)).slice() });
-                
-                let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l'));
-                let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r'));
+                let lh_pial_mesh = new THREE.Mesh(lh_pial_geometry, createMaterial(lh_pial_geometry, 'l', lh_inflated_geometry));
+                let rh_pial_mesh = new THREE.Mesh(rh_pial_geometry, createMaterial(rh_pial_geometry, 'r', rh_inflated_geometry));
                 
                 console.log(lh_pial_mesh);
                 
@@ -133,30 +102,24 @@
                 // scene1.add(lh_inflated_mesh);
                 // scene1.add(rh_inflated_mesh);
                 
-                scene1.add(pointlight1);
-                scene2.add(pointlight2);
-                
                 window.addEventListener("resize", function() {
                     camera.aspect = window.innerWidth / window.innerHeight;
                     camera.updateProjectionMatrix();
                     renderer.setSize(window.innerWidth, window.innerHeight);
                 });
                 
+                
+                let params = { inflation: 0 };
                 gui.add(params, 'inflation', 0, 1).step(0.01).onChange(value => {
-                    lh_pial_mesh.morphTargetInfluences[0] = value;
-                    rh_pial_mesh.morphTargetInfluences[0] = value;
-                    
-                    lh_pial_geometry.computeVertexNormals();
-                    rh_pial_geometry.computeVertexNormals();
-                    
-                    lh_pial_geometry.computeMorphNormals();
-                    rh_pial_geometry.computeMorphNormals();
+                    lh_pial_mesh.material.uniforms.inflation.value = value;
+                    rh_pial_mesh.material.uniforms.inflation.value = value;
                 });
                 
                 function animate() {
                     requestAnimationFrame(animate);
                     pointlight1.position.copy(camera.position);
                     pointlight2.position.copy(camera.position);
+                    
                     controls.update();
                     
                     renderer.clear();
@@ -187,43 +150,110 @@
                 return result;
             }
             
-            function createMaterial(geometry, type) {
-                let cols = [];
-                // for (let i = 0; i < geometry.attributes.position.count; i++) {
-                //     let label = null;
-                //     if (type == 'l' && left_labels[i]) label = left_labels[i];
-                //     else if (type == 'r' && right_labels[i]) label = right_labels[i];
-                    
-                //     if (label) {
-                //         let color = hashstring(label.basename + "...") % 0xffffff;
-                //         let intensity = +label.values[3];
-                //         if (intensity < .3) intensity = .3;
-                        
-                //         let b = color & 8;
-                //         let g = (color >> 8) & 8;
-                //         let r = (color >> 16) & 8;
-                        
-                //         cols.push(r * intensity);
-                //         cols.push(g * intensity);
-                //         cols.push(b * intensity);
-                //         cols.push(1);
-                //     } else {
-                //         cols.push(.5);
-                //         cols.push(.5);
-                //         cols.push(.5);
-                //         cols.push(1);
-                //     }
-                // }
+            function createMaterial(geometry, type, inflated) {
+                let vertshader = `
+                attribute vec4 color;
+                attribute vec3 morphTarget;
+                attribute vec3 morphNormal;
+                uniform float inflation;
                 
-                // geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 4));
-                return new THREE.MeshLambertMaterial({
+                varying vec4 vcolor;
+                varying vec3 vpos;
+                varying vec3 vnorm;
+                
+                void main() {
+                    vcolor = color;
+                    vpos = position;
+                    vnorm = normal;
+                    
+                    vec3 morphDifference = morphTarget - position;
+                    
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position + morphDifference * inflation, 1.0);
+                }
+                `;
+                let fragshader = `
+                precision highp float;
+                
+                uniform float inflation;
+                varying vec4 vcolor;
+                varying vec3 vpos;
+                varying vec3 vnorm;
+                
+                struct PointLight {
+                    vec3 color;
+                    vec3 position;
+                    float distance;
+                };
+                uniform PointLight pointLights[NUM_POINT_LIGHTS];
+                uniform float lightIntensity;
+                
+                void main() {
+                    vec4 illumination = vec4(0, 0, 0, 1);
+                    for (int i = 0; i < NUM_POINT_LIGHTS; i++) {
+                        vec3 direction = normalize(vpos - pointLights[i].position);
+                        illumination.xyz += clamp(dot(direction, vnorm), 0.0, 1.0) * pointLights[i].color;
+                    }
+                    illumination.xyz *= (1.0 - inflation);
+                    
+                    gl_FragColor = vcolor * (illumination + vec4(inflation, inflation, inflation, 1));
+                }
+                `;
+                
+                let cols = [];
+                let morphTargets = [];
+                for (let i = 0; i < geometry.attributes.position.count; i++) {
+                    let label = null;
+                    if (type == 'l' && left_labels[i]) label = left_labels[i];
+                    else if (type == 'r' && right_labels[i]) label = right_labels[i];
+                    
+                    if (inflated) {
+                        let shift = [170, 0, 0];
+                        if (type == 'r') shift = [260, 0, 0];
+                        morphTargets.push(inflated.attributes.position.array[i * 3] + shift[0]);
+                        morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
+                        morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
+                    } else {
+                        morphTargets.push(geometry.attributes.position.array[i * 3]);
+                        morphTargets.push(geometry.attributes.position.array[i * 3 + 1]);
+                        morphTargets.push(geometry.attributes.position.array[i * 3 + 2]);
+                    }
+                    
+                    if (label) {
+                        let color = hashstring(label.basename + "!@#$%^&*()") % 0xffffff;
+                        let intensity = +label.values[3];
+                        if (intensity < .3) intensity = .3;
+                        
+                        let b = color & 8;
+                        let g = (color >> 8) & 8;
+                        let r = (color >> 16) & 8;
+                        
+                        cols.push(r * intensity);
+                        cols.push(g * intensity);
+                        cols.push(b * intensity);
+                        cols.push(1);
+                    } else {
+                        cols.push(.5);
+                        cols.push(.5);
+                        cols.push(.5);
+                        cols.push(1);
+                    }
+                }
+                
+                geometry.addAttribute('morphNormal', new THREE.BufferAttribute(geometry.attributes.normal.array.slice(), 3));
+                geometry.addAttribute('morphTarget', new THREE.BufferAttribute(new Float32Array(morphTargets), 3));
+                geometry.addAttribute('color', new THREE.BufferAttribute(new Float32Array(cols), 4));
+                return new THREE.ShaderMaterial({
+                    // color: type == 'l' ? new THREE.Color(0x2194ce) : new THREE.Color(0xce2194),
+                    vertexShader: vertshader,
+                    fragmentShader: fragshader,
                     transparent: true,
-                    color: type == 'l' ? new THREE.Color(0x2194ce) : new THREE.Color(0xce2194),
-                    // vertexShader: vertshader,
-                    // fragmentShader: fragshader,
-                    morphTargets: true,
-                    morphNormals: true,
-                    vertexColors: THREE.FaceColors
+                    lights: true,
+                    uniforms: THREE.UniformsUtils.merge([
+                        THREE.UniformsLib['lights'], {
+                            inflation: { value: 0 },
+                            lightIntensity: { value: 1 },
+                        }
+                    ]),
                 })
             }
             
@@ -258,6 +288,31 @@
                     resolve(null);
                 });
             }
+            
+            // function computeMorphNormals(geometry) {
+            //     let norms = [];
+            //     for (let i = 0; i < geometry.attributes.position.count; i += 3) {
+            //         let vidx = i * 3;
+            //         let A = new THREE.Vector3(geometry.attributes.position.array[vidx],
+            //                                   geometry.attributes.position.array[vidx + 1],
+            //                                   geometry.attributes.position.array[vidx + 2]);
+            //         let B = new THREE.Vector3(geometry.attributes.position.array[vidx + 3],
+            //                                   geometry.attributes.position.array[vidx + 3 + 1],
+            //                                   geometry.attributes.position.array[vidx + 3 + 2]);
+            //         let C = new THREE.Vector3(geometry.attributes.position.array[vidx + 6],
+            //                                   geometry.attributes.position.array[vidx + 6 + 1],
+            //                                   geometry.attributes.position.array[vidx + 6 + 2]);
+            //         let norm = B.sub(A).cross(C.sub(A)).normalize();
+                    
+            //         norms.push(norm.x); norms.push(norm.y); norms.push(norm.z);
+            //         norms.push(norm.x); norms.push(norm.y); norms.push(norm.z);
+            //         norms.push(norm.x); norms.push(norm.y); norms.push(norm.z);
+            //     }
+            //     console.log(norms);
+            //     // console.log(geometry.attributes.normal.count, norms.length)
+            //     geometry.attributes.morphNormal.array = norms;
+            //     geometry.attributes.morphNormal.needsUpdate = true;
+            // }
             
             function hashstring(s) {
                 var h = 0, l = s.length, i = 0;
