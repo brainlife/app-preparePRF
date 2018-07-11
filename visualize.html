@@ -53,15 +53,13 @@
             // 0.0    0.0    0.0    1.0
             
             // sform to transform r2 to the above canonical:
-            let r2_sform = mathjs.matrix(nifti_reader.readHeader(r2_buff).affine);
+            // let r2_sform = mathjs.matrix(nifti_reader.readHeader(r2_buff).affine);
             let ras2ras = mathjs.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
             let ras2rsa = mathjs.matrix([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]);
             let ras2sar = mathjs.matrix([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]);
             let ras2ars = mathjs.matrix([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
             let ras2asr = mathjs.matrix([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1]]);
             let ras2sra = mathjs.matrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]);
-            
-            let axis_swap = ras2ras;
             
             let r2_sform = mathjs.matrix([[0.069325, 2.988407, 0.254195, -102.386803],
                                           [2.456780, -0.202424, 1.709754, -125.739937],
@@ -71,7 +69,7 @@
                                                 [0.0, 1.0, 0.0, -128],
                                                 [0.0, 0.0, 1.0, -148],
                                                 [0.0, 0.0, 0.0, 1.0]]);
-            let vertex2overlay = mathjs.multiply(mathjs.inv(r2_sform), canonical_sform);
+            let vertex2overlay = mathjs.multiply(mathjs.inv(r2_sform), canonical_sform, ras2rsa);
             console.log(r2_sform, canonical_sform);
             console.log(vertex2overlay);
             console.log(mathjs.multiply(vertex2overlay, [[80.38], [51.18], [111.4], [1]]));
