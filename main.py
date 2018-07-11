@@ -3,6 +3,7 @@
 # r2 + freesurfer files => r2 overlay information (25 MB)
 # get task id from config.json => send task id to ui-3dsurfaces
 # ui-3dsurfaces gets task id from url then grabs 25 MB of data...
+# download output then reupload?
 
 # output config for ui-3dsurfaces in the following format:
 # (output.json)
