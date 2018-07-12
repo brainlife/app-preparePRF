@@ -46,6 +46,7 @@ import json
 import loader
 import nibabel as nib
 import numpy as np
+from matplotlib import pyplot as plt
 
 with open('config.json') as config_json:
     config = json.load(config_json)
@@ -62,48 +63,82 @@ rh_pial_path = os.path.join(config['freesurfer'], "surf/rh.pial.vtk")
 
 lh_pial = loader.load_vtk(lh_pial_path)
 rh_pial = loader.load_vtk(rh_pial_path)
-lh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], "surf/lh.inflated.vtk"))
-rh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], "surf/rh.inflated.vtk"))
-lh_white = loader.load_vtk(os.path.join(config['freesurfer'], "surf/lh.white.vtk"))
-rh_white = loader.load_vtk(os.path.join(config['freesurfer'], "surf/rh.white.vtk"))
 
-surfaces = []
-color_maps = dict()
-morph_maps = dict()
+justin_lh_pial = loader.load_vtk(os.path.join(config['freesurfer'], "leftVertices.csv"))
 
-color_maps[lh_pial_path] = dict()
-color_maps[rh_pial_path] = dict()
+len_lh = len(lh_pial)
+len_justin = len(justin_lh_pial)
 
-morph_maps[lh_pial_path] = dict()
-morph_maps[rh_pial_path] = dict()
+xs_steven = []
+ys_steven = []
 
-# write left-hand side information
-for i in range(len(lh_pial)):
-    lh_x = (lh_white[i][0] + lh_pial[i][0]) / 2
-    lh_y = (lh_white[i][1] + lh_pial[i][1]) / 2
-    lh_z = (lh_white[i][2] + lh_pial[i][2]) / 2
+xs_justin = []
+ys_justin = []
+
+print(len_lh, len_justin)
+for i in range(min(len_lh, len_justin)):
+    xs_steven.append(lh_pial[i][0] + 88)
+    ys_steven.append(lh_pial[i][2] + 148)
     
-    lh_r2_xyz = np.matmul(inv_xform, np.mat([[lh_x], [lh_y], [lh_z], [1]]))
-    x, y, z, w = [int(v) for v in np.round(lh_r2_xyz.flatten()).tolist()[0]]
-    
-    if inside_bounds(x, y, z, r2_data.shape) and np.isfinite(r2_data[x, y, z]):
-        color_maps[lh_pial_path][i] = r2_data[x, y, z]
-    morph_maps[lh_pial_path][i] = lh_inflated[i]
+    xs_justin.append(justin_lh_pial[i][1])
+    ys_justin.append(justin_lh_pial[i][2])
 
-# write right-hand side information
-for i in range(len(rh_pial)):
-    rh_x = (rh_white[i][0] + rh_pial[i][0]) / 2
-    rh_y = (rh_white[i][1] + rh_pial[i][1]) / 2
-    rh_z = (rh_white[i][2] + rh_pial[i][2]) / 2
-    
-    rh_r2_xyz = np.matmul(inv_xform, np.mat([[rh_x], [rh_y], [rh_z], [1]]))
-    x, y, z, w = [int(v) for v in np.round(rh_r2_xyz.flatten()).tolist()[0]]
-    
-    if inside_bounds(x, y, z, r2_data.shape) and np.isfinite(r2_data[x, y, z]):
-        color_maps[rh_pial_path][i] = r2_data[x, y, z]
-    morph_maps[rh_pial_path][i] = rh_inflated[i]
+plt.subplot(2, 1, 1)
+plt.plot(xs_steven, ys_steven)
 
-output = { 'surfaces': surfaces, 'color_maps': color_maps, 'morph_maps': morph_maps }
+plt.xlim(0, 250)
+plt.ylim(0, 250)
 
-with open('output.json', 'w+') as output_json:
-    output_json.write(json.dumps(output))
+plt.subplot(2, 1, 2)
+plt.plot(xs_justin, ys_justin)
+
+plt.xlim(0, 250)
+plt.ylim(0, 250)
+
+plt.show()
+
+# lh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], "surf/lh.inflated.vtk"))
+# rh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], "surf/rh.inflated.vtk"))
+# lh_white = loader.load_vtk(os.path.join(config['freesurfer'], "surf/lh.white.vtk"))
+# rh_white = loader.load_vtk(os.path.join(config['freesurfer'], "surf/rh.white.vtk"))
+
+# surfaces = []
+# color_maps = dict()
+# morph_maps = dict()
+
+# color_maps[lh_pial_path] = dict()
+# color_maps[rh_pial_path] = dict()
+
+# morph_maps[lh_pial_path] = dict()
+# morph_maps[rh_pial_path] = dict()
+
+# # write left-hand side information
+# for i in range(len(lh_pial)):
+#     lh_x = (lh_white[i][0] + lh_pial[i][0]) / 2
+#     lh_y = (lh_white[i][1] + lh_pial[i][1]) / 2
+#     lh_z = (lh_white[i][2] + lh_pial[i][2]) / 2
+    
+#     lh_r2_xyz = np.matmul(inv_xform, np.mat([[lh_x], [lh_y], [lh_z], [1]]))
+#     x, y, z, w = [int(v) for v in np.round(lh_r2_xyz.flatten()).tolist()[0]]
+    
+#     if inside_bounds(x, y, z, r2_data.shape) and np.isfinite(r2_data[x, y, z]):
+#         color_maps[lh_pial_path][i] = r2_data[x, y, z]
+#     morph_maps[lh_pial_path][i] = lh_inflated[i]
+
+# # write right-hand side information
+# for i in range(len(rh_pial)):
+#     rh_x = (rh_white[i][0] + rh_pial[i][0]) / 2
+#     rh_y = (rh_white[i][1] + rh_pial[i][1]) / 2
+#     rh_z = (rh_white[i][2] + rh_pial[i][2]) / 2
+    
+#     rh_r2_xyz = np.matmul(inv_xform, np.mat([[rh_x], [rh_y], [rh_z], [1]]))
+#     x, y, z, w = [int(v) for v in np.round(rh_r2_xyz.flatten()).tolist()[0]]
+    
+#     if inside_bounds(x, y, z, r2_data.shape) and np.isfinite(r2_data[x, y, z]):
+#         color_maps[rh_pial_path][i] = r2_data[x, y, z]
+#     morph_maps[rh_pial_path][i] = rh_inflated[i]
+
+# output = { 'surfaces': surfaces, 'color_maps': color_maps, 'morph_maps': morph_maps }
+
+# with open('output.json', 'w+') as output_json:
+#     output_json.write(json.dumps(output))

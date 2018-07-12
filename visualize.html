@@ -23,7 +23,7 @@
             let scene2 = new THREE.Scene();
             let camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, .1, 10000);
             
-            camera.position.y = 200;
+            camera.position.y = -200;
             camera.up = new THREE.Vector3(0, 0, 1);
             
             let renderer = new THREE.WebGLRenderer();
@@ -61,6 +61,8 @@
             let ras2asr = mathjs.matrix([[0, 1, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1]]);
             let ras2sra = mathjs.matrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]]);
             
+            let axis_swap = ras2sra;
+            
             let r2_sform = mathjs.matrix([[0.069325, 2.988407, 0.254195, -102.386803],
                                           [2.456780, -0.202424, 1.709754, -125.739937],
                                           [1.720298, 0.168658, -2.451964, -11.605442],
@@ -69,7 +71,11 @@
                                                 [0.0, 1.0, 0.0, -128],
                                                 [0.0, 0.0, 1.0, -148],
                                                 [0.0, 0.0, 0.0, 1.0]]);
-            let vertex2overlay = mathjs.multiply(mathjs.inv(r2_sform), canonical_sform);
+            let translation = mathjs.matrix([[1.0, 0.0, 0.0, 176/2],
+                                                [0.0, 1.0, 0.0, 256/2],
+                                                [0.0, 0.0, 1.0, 256/2],
+                                                [0.0, 0.0, 0.0, 1.0]]);
+            let vertex2overlay = mathjs.inv(r2_sform);
             console.log(r2_sform, canonical_sform);
             console.log(vertex2overlay);
             console.log(mathjs.multiply(vertex2overlay, [[80.38], [51.18], [111.4], [1]]));
@@ -139,6 +145,7 @@
                 scene1.add(new THREE.AxesHelper(100));
                 scene1.add(lh_pial_mesh);
                 scene1.add(rh_pial_mesh);
+                // rh_pial_mesh.visible = false;
                 
                 window.addEventListener("resize", function() {
                     camera.aspect = window.innerWidth / window.innerHeight;
@@ -270,14 +277,8 @@
                     morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
                     morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
                     
-                    // let tx = (x / this.color_map.shape[0] * 256 - 128) / 1.5;
-                    // let ty = (y / this.color_map.shape[1] * 256 - 128) / 1.5;
-                    // let tz = (z / this.color_map.shape[2] * 256 - 128) / 1.5;
-                    // let value = this.color_map.get(y, this.color_map.shape[0] - x, z);
-                    
                     // get r2 weight
-                    
-                    let r2_xyz = mathjs.multiply(vertex2overlay, mathjs.matrix([[x], [y], [-z], [1]]))._data;
+                    let r2_xyz = mathjs.multiply(vertex2overlay, mathjs.matrix([[y + 88], [x + 128], [z + 148], [1]]))._data;
                     
                     let r2_x = Math.round(r2_xyz[0][0]);
                     let r2_y = Math.round(r2_xyz[1][0]);
