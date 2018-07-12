@@ -88,7 +88,7 @@
             
             async.eachLimit(labelFiles, 10, function(filename, next_file) {
                 console.log("loading", filename);
-                loadLabels("input/output/label/" + filename)
+                loadLabels("input/freesurfer/label/" + filename)
                 .then(_ => {
                     next_file();
                 });
@@ -96,22 +96,22 @@
                 if (err) console.error(err);
                 
                 console.log("loading lh.pial");
-                let lh_pial_geometry = await loadVTK('input/output/surf/lh.pial.vtk');
+                let lh_pial_geometry = await loadVTK('input/freesurfer/surf/lh.pial.vtk');
                 
                 console.log("loading rh.pial");
-                let rh_pial_geometry = await loadVTK('input/output/surf/rh.pial.vtk');
+                let rh_pial_geometry = await loadVTK('input/freesurfer/surf/rh.pial.vtk');
                 
                 console.log("loading lh.white");
-                let lh_white_geometry = await loadVTK('input/output/surf/lh.white.vtk');
+                let lh_white_geometry = await loadVTK('input/freesurfer/surf/lh.white.vtk');
                 
                 console.log("loading rh.white");
-                let rh_white_geometry = await loadVTK('input/output/surf/rh.white.vtk');
+                let rh_white_geometry = await loadVTK('input/freesurfer/surf/rh.white.vtk');
                 
                 console.log("loading lh.inflated");
-                let lh_inflated_geometry = await loadVTK('input/output/surf/lh.inflated.vtk');
+                let lh_inflated_geometry = await loadVTK('input/freesurfer/surf/lh.inflated.vtk');
                 
                 console.log("loading rh.inflated");
-                let rh_inflated_geometry = await loadVTK('input/output/surf/rh.inflated.vtk');
+                let rh_inflated_geometry = await loadVTK('input/freesurfer/surf/rh.inflated.vtk');
                 
                 let pointlight1 = new THREE.PointLight(0xffffff, 1);
                 let pointlight2 = new THREE.PointLight(0xffffff, 1);
@@ -278,7 +278,7 @@
                     morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
                     
                     // get r2 weight
-                    let r2_xyz = mathjs.multiply(vertex2overlay, mathjs.matrix([[y + 88], [x + 128], [z + 148], [1]]))._data;
+                    let r2_xyz = mathjs.multiply(vertex2overlay, mathjs.matrix([[x], [y], [z], [1]]))._data;
                     
                     let r2_x = Math.round(r2_xyz[0][0]);
                     let r2_y = Math.round(r2_xyz[1][0]);
