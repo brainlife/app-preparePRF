@@ -77,10 +77,10 @@ ys_justin = []
 
 print(len_lh, len_justin)
 for i in range(min(len_lh, len_justin)):
-    xs_steven.append(lh_pial[i][0] + 88)
-    ys_steven.append(lh_pial[i][2] + 148)
+    xs_steven.append(lh_pial[i][1] + 128)
+    ys_steven.append(lh_pial[i][2] + 128)
     
-    xs_justin.append(justin_lh_pial[i][1])
+    xs_justin.append(justin_lh_pial[i][0])
     ys_justin.append(justin_lh_pial[i][2])
 
 plt.subplot(2, 1, 1)

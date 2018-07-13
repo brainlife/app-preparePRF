@@ -63,32 +63,21 @@
             
             let axis_swap = ras2sra;
             
-            let r2_sform = mathjs.matrix([[0.069325, 2.988407, 0.254195, -102.386803],
-                                          [2.456780, -0.202424, 1.709754, -125.739937],
-                                          [1.720298, 0.168658, -2.451964, -11.605442],
-                                          [0.000000, 0.000000, 0.000000, 1.000000]]);
-            let canonical_sform = mathjs.matrix([[1.0, 0.0, 0.0, -87.5],
-                                                [0.0, 1.0, 0.0, -128],
-                                                [0.0, 0.0, 1.0, -148],
-                                                [0.0, 0.0, 0.0, 1.0]]);
-            let translation = mathjs.matrix([[1.0, 0.0, 0.0, 176/2],
-                                                [0.0, 1.0, 0.0, 256/2],
-                                                [0.0, 0.0, 1.0, 256/2],
-                                                [0.0, 0.0, 0.0, 1.0]]);
+            // let canonical_sform = mathjs.matrix([[1.0, 0.0, 0.0, -87.5],
+            //                                     [0.0, 1.0, 0.0, -128],
+            //                                     [0.0, 0.0, 1.0, -148],
+            //                                     [0.0, 0.0, 0.0, 1.0]]);
+            let r2_sform = mathjs.matrix(nifti_reader.readHeader(r2_buff).affine);
             let vertex2overlay = mathjs.inv(r2_sform);
-            console.log(r2_sform, canonical_sform);
-            console.log(vertex2overlay);
-            console.log(mathjs.multiply(vertex2overlay, [[80.38], [51.18], [111.4], [1]]));
             
             let stride = [1, r2_nifti.sizes[0], r2_nifti.sizes[0] * r2_nifti.sizes[1]];
             let r2 = ndarray(r2_nifti.data, r2_nifti.sizes, stride);
-            console.log(r2_nifti_header);
             
             showR2();
             
             async.eachLimit(labelFiles, 10, function(filename, next_file) {
                 console.log("loading", filename);
-                loadLabels("input/freesurfer/label/" + filename)
+                loadLabels("input/output2/label/" + filename)
                 .then(_ => {
                     next_file();
                 });
@@ -96,22 +85,22 @@
                 if (err) console.error(err);
                 
                 console.log("loading lh.pial");
-                let lh_pial_geometry = await loadVTK('input/freesurfer/surf/lh.pial.vtk');
+                let lh_pial_geometry = await loadVTK('input/output2/surf/lh.pial.vtk');
                 
                 console.log("loading rh.pial");
-                let rh_pial_geometry = await loadVTK('input/freesurfer/surf/rh.pial.vtk');
+                let rh_pial_geometry = await loadVTK('input/output2/surf/rh.pial.vtk');
                 
                 console.log("loading lh.white");
-                let lh_white_geometry = await loadVTK('input/freesurfer/surf/lh.white.vtk');
+                let lh_white_geometry = await loadVTK('input/output2/surf/lh.white.vtk');
                 
                 console.log("loading rh.white");
-                let rh_white_geometry = await loadVTK('input/freesurfer/surf/rh.white.vtk');
+                let rh_white_geometry = await loadVTK('input/output2/surf/rh.white.vtk');
                 
                 console.log("loading lh.inflated");
-                let lh_inflated_geometry = await loadVTK('input/freesurfer/surf/lh.inflated.vtk');
+                let lh_inflated_geometry = await loadVTK('input/output2/surf/lh.inflated.vtk');
                 
                 console.log("loading rh.inflated");
-                let rh_inflated_geometry = await loadVTK('input/freesurfer/surf/rh.inflated.vtk');
+                let rh_inflated_geometry = await loadVTK('input/output2/surf/rh.inflated.vtk');
                 
                 let pointlight1 = new THREE.PointLight(0xffffff, 1);
                 let pointlight2 = new THREE.PointLight(0xffffff, 1);
