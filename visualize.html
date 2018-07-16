@@ -46,6 +46,7 @@
             let r2_buff = await r2_req.arrayBuffer();
             let r2_nifti = niftijs.parse(r2_buff);
             let r2_nifti_header = niftijs.parseHeader(r2_buff);
+            
             // standard sform for canonical:
             // 1.0    0.0    0.0  -87.5
             // 0.0    1.0    0.0 -128.0
@@ -72,6 +73,7 @@
             
             let stride = [1, r2_nifti.sizes[0], r2_nifti.sizes[0] * r2_nifti.sizes[1]];
             let r2 = ndarray(r2_nifti.data, r2_nifti.sizes, stride);
+            let w;
             
             showR2();
             
@@ -276,27 +278,25 @@
                     let r2_weight = r2.get(r2_x, r2_y, r2_z);
                     
                     if (typeof r2_weight == 'number' && r2_weight > 0) {
-                        let b = 0;
-                        let g = 0;
                         let r = 0;
+                        let g = 0;
+                        let b = 0;
                         
                         // cols.push(x / r2.shape[0]);
                         // cols.push(y / r2.shape[1]);
                         // cols.push(z / r2.shape[2]);
                         
                         // black red orange yellow white
-                        if (r2_weight > .75) {
+                        if (r2_weight < 1/3) {
+                            r = r2_weight * 3;
+                        } else if (r2_weight < 2/3) {
+                            r = 1;
+                            g = (r2_weight - 1/3) * 3;
+                        } else {
                             r = 1;
                             g = 1;
-                            b = 1 - (r2_weight - .75) / .25;
-                        } else if (r2_weight > .5) {
-                            r = 1;
-                            g = (r2_weight - .5) / .25 * .5 + .5;
-                        } else if (r2_weight > .25) {
-                            r = 1;
-                            g = (r2_weight - .25) / .25 * .5;
-                        } else {
-                            r = r2_weight / .25;
+                            b = (r2_weight - 2/3) * 3;
+                            if (b > 1) b = 1;
                         }
                         
                         if (label) {
