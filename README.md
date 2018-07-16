@@ -10,30 +10,27 @@ Run this app with the respective outputs from Freesurfer and pRF.
 
 ## Outputs
 
-Outputs are stored inside a folder called `output` which contains the appropriate vtk surfaces (`lh.pial.vtk`, `lh.white.vtk`, `lh.inflated.vtk`, and equivalent surfaces for the right hemisphere). Also included is a file called `output.json` containing the appropriate mapping to each file:
+The only output from this app is a single `surfaces.json` file containing the appropriate mapping for each surface:
 
 ```javascript
-{
-    surfaces: [
-        {
-            "left": true,
-            "name": "Left Pial Surface",
-            "color": [ 0.5, 0.5, 0.5 ],
-            "filename": "lh.pial.vtk",
-            "filetype": "vtk",
-            "morphTarget": "lh.inflated.vtk"
-        },
-        {
-            "left": true,
-            "name": "Left Inflated Surface",
-            "color": [ 0.5, 0.5, 0.5 ],
-            "filename": "lh.inflated.vtk",
-            "filetype": "vtk"
-        },
-        // ...
-    ],
-    overlay: "r2.nii"
-}
+[
+    {
+        "left": true,
+        "name": "Left Pial Surface",
+        "vcolor": [16842799, 16842799, 16842799/*, ...*/],
+        "filename": "lh.pial.vtk",
+        "filetype": "vtk",
+        "morphTarget": "lh.inflated.vtk"
+    },
+    {
+        "left": true,
+        "name": "Left Inflated Surface",
+        "vcolor": [16842841, 16842841, 16842841/*, ...*/],
+        "filename": "lh.inflated.vtk",
+        "filetype": "vtk"
+    },
+    // ...
+]
 ```
 
 (This app will also write the bold.nii.gz sform to r2.nii)
