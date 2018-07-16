@@ -31,7 +31,7 @@
             let loader = new THREE.VTKLoader();
             let gui = new dat.GUI();
             
-            renderer.setClearColor(new THREE.Color(0x222222));
+            renderer.setClearColor(new THREE.Color(0));
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("main").appendChild(renderer.domElement);
             
@@ -133,9 +133,9 @@
                 
                 console.log(lh_pial_mesh);
                 
-                scene1.add(new THREE.AxesHelper(100));
+                // scene1.add(new THREE.AxesHelper(100));
                 scene1.add(lh_pial_mesh);
-                scene1.add(rh_pial_mesh);
+                // scene1.add(rh_pial_mesh);
                 // rh_pial_mesh.visible = false;
                 
                 window.addEventListener("resize", function() {
