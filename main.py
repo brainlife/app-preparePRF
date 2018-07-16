@@ -103,14 +103,14 @@ r2.set_qform(bold.get_qform())
 r2_data = r2.get_fdata()
 
 # load everything
-lh_pial = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.pial.vtk'))
-rh_pial = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.pial.vtk'))
+lh_pial = loader.load_vtk('surfaces/lh.pial.vtk')
+rh_pial = loader.load_vtk('surfaces/rh.pial.vtk')
 
-lh_white = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.white.vtk'))
-rh_white = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.white.vtk'))
+lh_white = loader.load_vtk('surfaces/lh.white.vtk')
+rh_white = loader.load_vtk('surfaces/rh.white.vtk')
 
-lh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.inflated.vtk'))
-rh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.inflated.vtk'))
+lh_inflated = loader.load_vtk('surfaces/lh.inflated.vtk')
+rh_inflated = loader.load_vtk('surfaces/rh.inflated.vtk')
 
 # get inverse xform 
 inv_xform = np.linalg.inv(r2.get_sform())
@@ -182,5 +182,5 @@ surfaces = [lh_surface, rh_surface, {
     "visible": False
 }]
 
-with open('surfaces.json', 'w+') as surfaces_json:
+with open('surfaces/surfaces.json', 'w+') as surfaces_json:
     surfaces_json.write(json.dumps(surfaces))

@@ -3,6 +3,6 @@ config.json
 package.json
 input
 node_modules
-surfaces.json
+surfaces
 finished
 *.pyc
