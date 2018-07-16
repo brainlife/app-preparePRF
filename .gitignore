@@ -5,3 +5,4 @@ input
 node_modules
 surfaces.json
 finished
+*.pyc
