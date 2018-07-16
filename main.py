@@ -95,7 +95,7 @@ with open('config.json') as config_json:
     config = json.load(config_json)
 
 # loading r2
-bold = nib.load(os.path.join(config['task'], 'bold.nii.gz'))
+bold = nib.load(config['task'])
 r2 = nib.load(os.path.join(config['prf'], 'r2.nii'))
 r2.set_sform(bold.get_sform())
 r2.set_qform(bold.get_qform())
