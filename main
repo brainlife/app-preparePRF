@@ -10,8 +10,6 @@ rm -f finished
 
 mkdir surfaces
 
-echo $(pwd)
-
 singularity exec -e docker://brainlife/freesurfer:6.0.0 bash -c "echo $FREESURFER_LICENSE > /usr/local/freesurfer/license.txt && ./convert.sh"
 
 singularity exec -e docker://stevengeeky/python-nibabel ./main.py

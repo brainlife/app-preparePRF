@@ -3,7 +3,6 @@ dir_freesurfer=$(jq -r ".freesurfer" config.json)
 dir_prf=$(jq -r ".prf" config.json)
 
 echo "Converting files..."
-echo $(cat /usr/local/freesurfer/license.txt)
 
 mris_convert "$dir_freesurfer/surf/lh.pial" "surfaces/lh.pial.vtk"
 mris_convert "$dir_freesurfer/surf/lh.white" "surfaces/lh.white.vtk"
