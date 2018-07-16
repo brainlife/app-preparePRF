@@ -1,4 +1,5 @@
 {
     "freesurfer": "input/output/",
-    "prf": "input/prf/"
+    "prf": "input/prf/",
+    "task": "input/task/"
 }
