@@ -90,4 +90,4 @@ def update_vtk(filename, verts):
             mode = 'polygons'
     
     with open(filename, 'w+') as f:
-        f.write('\n'.join(lines))
+        f.write('\n'.join(newlines))
