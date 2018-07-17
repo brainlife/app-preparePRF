@@ -47,47 +47,49 @@ def inside_bounds(x, y, z, shape):
             and x < shape_x and y < shape_y and z < shape_z)
 
 def weight2hsv(weight):
-    r = 0
-    g = 0
-    b = 0
+    r = 0.0
+    g = 0.0
+    b = 0.0
     
-    if weight < 1/6:
-        r = 1
+    weight = float(weight)
+    if weight < 1.0/6.0:
+        r = 1.0
         g = weight * 6.0
-    elif weight < 2/6:
-        r = 1 - (weight - 1.0/6.0) * 6.0
-        g = 1
+    elif weight < 2.0/6.0:
+        r = 1.0 - (weight - 1.0/6.0) * 6.0
+        g = 1.0
     elif weight < 3.0/6.0:
-        g = 1
+        g = 1.0
         b = (weight - 2.0/6.0) * 6.0
     elif weight < 4.0/6.0:
-        g = 1 - (weight - 3.0/6.0) * 6.0
-        b = 1
+        g = 1.0 - (weight - 3.0/6.0) * 6.0
+        b = 1.0
     elif weight < 5.0/6.0:
         r = (weight - 4.0/6.0) * 6.0
-        b = 1
+        b = 1.0
     else:
-        r = 1
-        b = 1 - (weight - 5.0/6.0) * 6.0
+        r = 1.0
+        b = 1.0 - (weight - 5.0/6.0) * 6.0
     
     return (r, g, b)
 
 def weight2heat(weight):
-    r = 0
-    g = 0
-    b = 0
+    r = 0.0
+    g = 0.0
+    b = 0.0
     
+    weight = float(weight)
     if weight < 1.0/3.0:
         r = weight * 3.0
     elif weight < 2.0/3.0:
-        r = 1
+        r = 1.0
         g = (weight - 1.0/3.0) * 3.0
     else:
-        r = 1
-        g = 1
+        r = 1.0
+        g = 1.0
         b = (weight - 2.0/3.0) * 3.0
-        if (b > 1):
-            b = 1
+        if (b > 1.0):
+            b = 1.0
     
     return (r, g, b)
 
@@ -144,7 +146,7 @@ for i in range(len(lh_pial)):
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
-        r2_value = r2_data[coords_flat[0], coords_flat[1], coords_flat[2]]
+        r2_value = float(r2_data[coords_flat[0], coords_flat[1], coords_flat[2]])
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
@@ -164,7 +166,7 @@ for i in range(len(rh_pial)):
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
-        r2_value = r2_data[coords_flat[0], coords_flat[1], coords_flat[2]]
+        r2_value = float(r2_data[coords_flat[0], coords_flat[1], coords_flat[2]])
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
