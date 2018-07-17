@@ -69,7 +69,7 @@ def update_vtk(filename, verts):
     point_idx = 0
     num_points = None
     
-    for (line, idx) in lines:
+    for line in lines:
         if line.startswith('#'):
             newlines.append(line)
             continue
