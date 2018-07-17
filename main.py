@@ -135,7 +135,7 @@ rh_surface = {
 }
 
 for i in range(len(lh_pial)):
-    lh_inflated[i][0] -= 50
+    lh_inflated[i][0] -= 50.0
     
     x = (lh_pial[i][0] + lh_white[i][0]) * .5
     y = (lh_pial[i][1] + lh_white[i][1]) * .5
@@ -150,12 +150,12 @@ for i in range(len(lh_pial)):
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
-            color = (int(r2_r * 256) << 16) + (int(r2_g * 256) << 8) + int(r2_b * 256)
+            color = (int(r2_r * 256.0) << 16) + (int(r2_g * 256.0) << 8) + int(r2_b * 256.0)
     
     lh_surface['vcolor'].append(color)
 
 for i in range(len(rh_pial)):
-    rh_inflated[i][0] += 50
+    rh_inflated[i][0] += 50.0
     
     x = (rh_pial[i][0] + rh_white[i][0]) * .5
     y = (rh_pial[i][1] + rh_white[i][1]) * .5
@@ -170,7 +170,7 @@ for i in range(len(rh_pial)):
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
-            color = (int(r2_r * 256) << 16) + (int(r2_g * 256) << 8) + int(r2_b * 256)
+            color = (int(r2_r * 256.0) << 16) + (int(r2_g * 256.0) << 8) + int(r2_b * 256.0)
     
     rh_surface['vcolor'].append(color)
 
