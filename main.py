@@ -134,18 +134,9 @@ rh_surface = {
     "morphTarget": "rh.inflated.vtk"
 }
 
-rotation = 90.0 * np.pi / 180.0
-translation = 100.0
 for i in range(len(lh_pial)):
-    # transform inflated surface
-    ix = lh_inflated[i][0]
-    iy = lh_inflated[i][1]
-    iz = lh_inflated[i][2]
+    lh_inflated[i][0] -= 50.0
     
-    lh_inflated[i][0] = ix * np.cos(-rotation) - iy * np.sin(-rotation) - translation
-    lh_inflated[i][1] = ix * np.sin(-rotation) + iy * np.sin(-rotation)
-    
-    # get r2 value
     x = (lh_pial[i][0] + lh_white[i][0]) * .5
     y = (lh_pial[i][1] + lh_white[i][1]) * .5
     z = (lh_pial[i][2] + lh_white[i][2]) * .5
@@ -164,15 +155,8 @@ for i in range(len(lh_pial)):
     lh_surface['vcolor'].append(color)
 
 for i in range(len(rh_pial)):
-    # transform inflated surface
-    ix = rh_inflated[i][0]
-    iy = rh_inflated[i][1]
-    iz = rh_inflated[i][2]
+    rh_inflated[i][0] += 50.0
     
-    rh_inflated[i][0] = ix * np.cos(rotation) - iy * np.sin(rotation) + translation
-    rh_inflated[i][1] = ix * np.sin(rotation) + iy * np.sin(rotation)
-    
-    # get r2 value
     x = (rh_pial[i][0] + rh_white[i][0]) * .5
     y = (rh_pial[i][1] + rh_white[i][1]) * .5
     z = (rh_pial[i][2] + rh_white[i][2]) * .5
