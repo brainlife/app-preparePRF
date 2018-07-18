@@ -135,6 +135,7 @@ rh_surface = {
 }
 
 for i in range(len(lh_pial)):
+    lh_inflated[i][0] -= 60
     # x = (lh_pial[i][0] + lh_white[i][0]) * .5
     # y = (lh_pial[i][1] + lh_white[i][1]) * .5
     # z = (lh_pial[i][2] + lh_white[i][2]) * .5
@@ -156,6 +157,7 @@ for i in range(len(lh_pial)):
     lh_surface['vcolor'].append(color)
 
 for i in range(len(rh_pial)):
+    rh_inflated[i][0] += 60
     # x = (rh_pial[i][0] + rh_white[i][0]) * .5
     # y = (rh_pial[i][1] + rh_white[i][1]) * .5
     # z = (rh_pial[i][2] + rh_white[i][2]) * .5
