@@ -133,9 +133,12 @@ rh_surface = {
 }
 
 for i in range(len(lh_pial)):
-    x = (lh_pial[i][0] + lh_white[i][0]) * .5
-    y = (lh_pial[i][1] + lh_white[i][1]) * .5
-    z = (lh_pial[i][2] + lh_white[i][2]) * .5
+    # x = (lh_pial[i][0] + lh_white[i][0]) * .5
+    # y = (lh_pial[i][1] + lh_white[i][1]) * .5
+    # z = (lh_pial[i][2] + lh_white[i][2]) * .5
+    x = lh_pial[i][0]
+    y = lh_pial[i][1]
+    z = lh_pial[i][2]
     
     r2_coord = np.matmul(inv_xform, np.mat([[x], [y], [z], [1]]))
     coords_flat = [int(x) for x in r2_coord.flatten().tolist()[0]]
@@ -151,9 +154,12 @@ for i in range(len(lh_pial)):
     lh_surface['vcolor'].append(color)
 
 for i in range(len(rh_pial)):
-    x = (rh_pial[i][0] + rh_white[i][0]) * .5
-    y = (rh_pial[i][1] + rh_white[i][1]) * .5
-    z = (rh_pial[i][2] + rh_white[i][2]) * .5
+    # x = (rh_pial[i][0] + rh_white[i][0]) * .5
+    # y = (rh_pial[i][1] + rh_white[i][1]) * .5
+    # z = (rh_pial[i][2] + rh_white[i][2]) * .5
+    x = rh_pial[i][0]
+    y = rh_pial[i][1]
+    z = rh_pial[i][2]
     
     r2_coord = np.round(np.matmul(inv_xform, np.mat([[x], [y], [z], [1]])))
     coords_flat = [int(x) for x in r2_coord.flatten().tolist()[0]]

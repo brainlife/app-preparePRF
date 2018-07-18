@@ -259,14 +259,27 @@
                     // let morph_xyz = mathjs.multiply(inv, mathjs.matrix([[x], [y], [z], [1]]))._data;
                     
                     // setup morph targets
-                    let shift = [-60, 0, 0];
-                    if (type == 'r') shift = [60, 0, 0];
+                    let shift = [-100, 0, 0];
+                    let rotation = -90 * Math.PI / 180;
+                    if (type == 'r') {
+                        shift = [100, 0, 0];
+                        rotation = -rotation;
+                    }
+                    
+                    let ix = inflated.attributes.position.array[i * 3];
+                    let iy = inflated.attributes.position.array[i * 3] + 1;
+                    let iz = inflated.attributes.position.array[i * 3] + 2;
+                    
+                    let tx = ix;
+                    let ty = iy * Math.cos(rotation) - iz * Math.sin(rotation);
+                    let tz = iy * Math.sin(rotation) + iz * Math.cos(rotation);
+                    
                     // morphTargets.push(morph_xyz[0][0]);
                     // morphTargets.push(morph_xyz[1][0]);
                     // morphTargets.push(morph_xyz[2][0]);
-                    morphTargets.push(inflated.attributes.position.array[i * 3] + shift[0]);
-                    morphTargets.push(inflated.attributes.position.array[i * 3 + 1] + shift[1]);
-                    morphTargets.push(inflated.attributes.position.array[i * 3 + 2] + shift[2]);
+                    morphTargets.push(tx);
+                    morphTargets.push(ty);
+                    morphTargets.push(tz);
                     
                     // get r2 weight
                     let r2_xyz = mathjs.multiply(vertex2overlay, mathjs.matrix([[x], [y], [z], [1]]))._data;
