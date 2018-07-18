@@ -1,5 +1,5 @@
 {
     "freesurfer": "input/output/",
     "prf": "input/prf/",
-    "task": "input/task/"
+    "task": "input/task/bold.nii.gz"
 }

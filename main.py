@@ -47,47 +47,49 @@ def inside_bounds(x, y, z, shape):
             and x < shape_x and y < shape_y and z < shape_z)
 
 def weight2hsv(weight):
-    r = 0
-    g = 0
-    b = 0
+    r = 0.0
+    g = 0.0
+    b = 0.0
     
-    if weight < 1/6:
-        r = 1
-        g = weight * 6
-    elif weight < 2/6:
-        r = 1 - (weight - 1/6) * 6
-        g = 1
-    elif weight < 3/6:
-        g = 1
-        b = (weight - 2/6) * 6
-    elif weight < 4/6:
-        g = 1 - (weight - 3/6) * 6
-        b = 1
-    elif weight < 5/6:
-        r = (weight - 4/6) * 6
-        b = 1
+    weight = float(weight)
+    if weight < 1.0/6.0:
+        r = 1.0
+        g = weight * 6.0
+    elif weight < 2.0/6.0:
+        r = 1.0 - (weight - 1.0/6.0) * 6.0
+        g = 1.0
+    elif weight < 3.0/6.0:
+        g = 1.0
+        b = (weight - 2.0/6.0) * 6.0
+    elif weight < 4.0/6.0:
+        g = 1.0 - (weight - 3.0/6.0) * 6.0
+        b = 1.0
+    elif weight < 5.0/6.0:
+        r = (weight - 4.0/6.0) * 6.0
+        b = 1.0
     else:
-        r = 1
-        b = 1 - (weight - 5/6) * 6
+        r = 1.0
+        b = 1.0 - (weight - 5.0/6.0) * 6.0
     
     return (r, g, b)
 
 def weight2heat(weight):
-    r = 0
-    g = 0
-    b = 0
+    r = 0.0
+    g = 0.0
+    b = 0.0
     
-    if weight < 1/3:
-        r = weight * 3
-    elif weight < 2/3:
-        r = 1
-        g = (weight - 1/3) * 3
+    weight = float(weight)
+    if weight < 1.0/3.0:
+        r = weight * 3.0
+    elif weight < 2.0/3.0:
+        r = 1.0
+        g = (weight - 1.0/3.0) * 3.0
     else:
-        r = 1
-        g = 1
-        b = (weight - 2/3) * 3
-        if (b > 1):
-            b = 1
+        r = 1.0
+        g = 1.0
+        b = (weight - 2.0/3.0) * 3.0
+        if (b > 1.0):
+            b = 1.0
     
     return (r, g, b)
 
@@ -95,7 +97,7 @@ with open('config.json') as config_json:
     config = json.load(config_json)
 
 # loading r2
-bold = nib.load(os.path.join(config['task'], 'bold.nii.gz'))
+bold = nib.load(config['task'])
 r2 = nib.load(os.path.join(config['prf'], 'r2.nii'))
 r2.set_sform(bold.get_sform())
 r2.set_qform(bold.get_qform())
@@ -103,14 +105,14 @@ r2.set_qform(bold.get_qform())
 r2_data = r2.get_fdata()
 
 # load everything
-lh_pial = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.pial.vtk'))
-rh_pial = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.pial.vtk'))
+lh_pial = loader.load_vtk('surfaces/lh.pial.vtk')
+rh_pial = loader.load_vtk('surfaces/rh.pial.vtk')
 
-lh_white = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.white.vtk'))
-rh_white = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.white.vtk'))
+lh_white = loader.load_vtk('surfaces/lh.white.vtk')
+rh_white = loader.load_vtk('surfaces/rh.white.vtk')
 
-lh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/lh.inflated.vtk'))
-rh_inflated = loader.load_vtk(os.path.join(config['freesurfer'], 'surf/rh.inflated.vtk'))
+lh_inflated = loader.load_vtk('surfaces/lh.inflated.vtk')
+rh_inflated = loader.load_vtk('surfaces/rh.inflated.vtk')
 
 # get inverse xform 
 inv_xform = np.linalg.inv(r2.get_sform())
@@ -145,11 +147,11 @@ for i in range(len(lh_pial)):
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
-        r2_value = r2_data[coords_flat[0], coords_flat[1], coords_flat[2]]
+        r2_value = float(r2_data[coords_flat[0], coords_flat[1], coords_flat[2]])
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
-            color = int(r2_r * 256 * 256 * 256 + r2_g * 256 * 256 + r2_b * 256)
+            color = (int(r2_r * 255.0) << 16) + (int(r2_g * 255.0) << 8) + int(r2_b * 255.0)
     
     lh_surface['vcolor'].append(color)
 
@@ -166,13 +168,16 @@ for i in range(len(rh_pial)):
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
-        r2_value = r2_data[coords_flat[0], coords_flat[1], coords_flat[2]]
+        r2_value = float(r2_data[coords_flat[0], coords_flat[1], coords_flat[2]])
         
         if np.isfinite(r2_value):
             r2_r, r2_g, r2_b = weight2heat(r2_value)
-            color = int(r2_r * 256 * 256 * 256 + r2_g * 256 * 256 + r2_b * 256)
+            color = (int(r2_r * 255.0) << 16) + (int(r2_g * 255.0) << 8) + int(r2_b * 255.0)
     
     rh_surface['vcolor'].append(color)
+
+loader.update_vtk('surfaces/lh.inflated.vtk', lh_inflated)
+loader.update_vtk('surfaces/rh.inflated.vtk', rh_inflated)
 
 surfaces = [lh_surface, rh_surface, {
     "left": True,
@@ -188,5 +193,5 @@ surfaces = [lh_surface, rh_surface, {
     "visible": False
 }]
 
-with open('surfaces.json', 'w+') as surfaces_json:
+with open('surfaces/surfaces.json', 'w+') as surfaces_json:
     surfaces_json.write(json.dumps(surfaces))
