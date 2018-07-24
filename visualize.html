@@ -55,6 +55,12 @@
             
             // sform to transform r2 to the above canonical:
             // let r2_sform = mathjs.matrix(nifti_reader.readHeader(r2_buff).affine);
+            
+            let r2_qform = mathjs.matrix([[1.45320939e-07, 3.00000000e+00, -4.60899009e-07, -9.90000000e+01], [2.45745586e+00, 1.45320939e-07, 1.72072970e+00, -1.11690788e+02], [1.72072970e+00, -4.60899009e-07, -2.45745586e+00, 1.16666918e+01], [0.00000000e+00, 0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]);
+            let r2_adjustment = mathjs.matrix([[1, 0, 0, 88],
+                                            [0, 1, 0, 128],
+                                            [0, 0, 1, 128],
+                                            [0, 0, 0, 1]]);
             let ras2ras = mathjs.matrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]);
             let ras2rsa = mathjs.matrix([[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]]);
             let ras2sar = mathjs.matrix([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]);
@@ -69,7 +75,7 @@
             //                                     [0.0, 0.0, 1.0, -148],
             //                                     [0.0, 0.0, 0.0, 1.0]]);
             let r2_sform = mathjs.matrix(nifti_reader.readHeader(r2_buff).affine);
-            let vertex2overlay = mathjs.inv(r2_sform);
+            let vertex2overlay = mathjs.inv(r2_qform);
             
             let stride = [1, r2_nifti.sizes[0], r2_nifti.sizes[0] * r2_nifti.sizes[1]];
             let r2 = ndarray(r2_nifti.data, r2_nifti.sizes, stride);
@@ -92,11 +98,11 @@
                 console.log("loading rh.pial");
                 let rh_pial_geometry = await loadVTK('input/output2/surf/rh.pial.vtk');
                 
-                console.log("loading lh.white");
-                let lh_white_geometry = await loadVTK('input/output2/surf/lh.white.vtk');
+                console.log("loading lh.smoothwm");
+                let lh_white_geometry = await loadVTK('input/output2/surf/lh.smoothwm.vtk');
                 
-                console.log("loading rh.white");
-                let rh_white_geometry = await loadVTK('input/output2/surf/rh.white.vtk');
+                console.log("loading rh.smoothwm");
+                let rh_white_geometry = await loadVTK('input/output2/surf/rh.smoothwm.vtk');
                 
                 console.log("loading lh.inflated");
                 let lh_inflated_geometry = await loadVTK('input/output2/surf/lh.inflated.vtk');
@@ -260,23 +266,20 @@
                     
                     // setup morph targets
                     let shift = [-100, 0, 0];
-                    let rotation = -90 * Math.PI / 180;
+                    let rotation = 0;
                     if (type == 'r') {
                         shift = [100, 0, 0];
                         rotation = -rotation;
                     }
                     
                     let ix = inflated.attributes.position.array[i * 3];
-                    let iy = inflated.attributes.position.array[i * 3] + 1;
-                    let iz = inflated.attributes.position.array[i * 3] + 2;
+                    let iy = inflated.attributes.position.array[i * 3 + 1];
+                    let iz = inflated.attributes.position.array[i * 3 + 2];
                     
-                    let tx = ix;
-                    let ty = iy * Math.cos(rotation) - iz * Math.sin(rotation);
-                    let tz = iy * Math.sin(rotation) + iz * Math.cos(rotation);
+                    let tx = ix * Math.cos(rotation) - iy * Math.sin(rotation) + shift[0];
+                    let ty = iy * Math.cos(rotation) - iz * Math.sin(rotation) + shift[1];
+                    let tz = iz + shift[2];
                     
-                    // morphTargets.push(morph_xyz[0][0]);
-                    // morphTargets.push(morph_xyz[1][0]);
-                    // morphTargets.push(morph_xyz[2][0]);
                     morphTargets.push(tx);
                     morphTargets.push(ty);
                     morphTargets.push(tz);
@@ -290,7 +293,10 @@
                     
                     let r2_weight = r2.get(r2_x, r2_y, r2_z);
                     
-                    if (typeof r2_weight == 'number' && r2_weight > 0) {
+                    if (typeof r2_weight == 'number' && r2_weight > 0
+                        && r2_x >= 0 && r2_x < r2.shape[0]
+                        && r2_y >= 0 && r2_y < r2.shape[1]
+                        && r2_z >= 0 && r2_z < r2.shape[2]) {
                         let r = 0;
                         let g = 0;
                         let b = 0;
