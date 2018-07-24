@@ -144,7 +144,7 @@ for i in range(len(lh_pial)):
     z = lh_pial[i][2]
     
     r2_coord = np.matmul(inv_xform, np.mat([[x], [y], [z], [1]]))
-    coords_flat = [np.round(x) for x in r2_coord.flatten().tolist()[0]]
+    coords_flat = [int(round(x)) for x in r2_coord.flatten().tolist()[0]]
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
@@ -166,7 +166,7 @@ for i in range(len(rh_pial)):
     z = rh_pial[i][2]
     
     r2_coord = np.round(np.matmul(inv_xform, np.mat([[x], [y], [z], [1]])))
-    coords_flat = [np.round(x) for x in r2_coord.flatten().tolist()[0]]
+    coords_flat = [int(round(x)) for x in r2_coord.flatten().tolist()[0]]
     
     color = 0x808080
     if inside_bounds(coords_flat[0], coords_flat[1], coords_flat[2], r2.shape):
