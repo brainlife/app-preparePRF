@@ -6,7 +6,7 @@ A brain life application to prepare PRF and freesurfer data to be visualized wit
 
 Run `Freesurfer` on Brain Life with the **non-ACPC Aligned** `s017_canonical.nii` or the T1 image that you are using to conduct pRF analysis. Then run `pRF` (Justin Gardner's app) using your appropriate stimulus (`stim.nii.gz`) and task (`bold.nii.gz`).
 
-Run this app with the respective outputs from Freesurfer and pRF.
+Run this app with the T1 image you passed through Freesurfer, as well as the respective outputs from Freesurfer and pRF.
 
 ## Outputs
 
@@ -20,7 +20,8 @@ The only output from this app is a single `surfaces.json` file containing the ap
         "vcolor": [16842799, 16842799, 16842799/*, ...*/],
         "filename": "lh.pial.vtk",
         "filetype": "vtk",
-        "morphTarget": "lh.inflated.vtk"
+        "morphTarget": "lh.inflated.vtk",
+        "qform": [[1, 0, 0, 0], /*...*/]
     },
     {
         "left": true,
@@ -33,7 +34,7 @@ The only output from this app is a single `surfaces.json` file containing the ap
 ]
 ```
 
-(This app will also write the bold.nii.gz sform to r2.nii)
+This app will no longer write the qform/sform from bold.nii.gz to r2.nii.gz and therefore does not require an input with datatype `neuro/func/task`.
 
 ## How Parsing output from Freesurfer Works
 

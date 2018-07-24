@@ -62,7 +62,6 @@ def update_vtk(filename, verts):
     with open(filename) as f:
         contents = f.read()
     
-    result = []
     lines = contents.splitlines()
     newlines = []
     mode = 'header'
